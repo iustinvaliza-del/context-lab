@@ -1,0 +1,10 @@
+# Your source files stay on your computer
+sources/*
+!sources/.gitkeep
+
+# Obsidian's window layout changes every time you open it
+.obsidian/workspace*.json
+
+# System files
+.DS_Store
+Thumbs.db
