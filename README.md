@@ -2,24 +2,41 @@
 
 The starter folder for "Context is the job", the IESE Data and AI Club workshop. It is nearly empty on purpose. In the five rounds you write your own AGENTS.md, a skill and memory notes into it, and by the end this folder is your context library. It works the same in Claude Code and in Codex.
 
-There are no scripts, settings or hooks in it. Every file is a markdown file or one of Obsidian's settings files, and nothing you change in your copy goes back to this repository.
+Nothing you change in your copy goes back to this repository.
 
-## Get it
+## Get started
 
-**Without git:** on the context-lab page on GitHub, click the green **Code** button, then **Download ZIP**, and unzip it. Use the folder with this README directly inside it, which is called `context-lab-main`, and rename it to `context-lab`. On Windows, Extract All puts that folder inside a second folder with the same name.
+You need Claude Code or Codex installed and signed in. Nothing else: your tool downloads this folder and installs the rest.
 
-**With git:** copy the HTTPS address from the same **Code** button, open a terminal where you keep your work, and type `git clone` followed by the address. That makes the `context-lab` folder.
+**1. Ask your tool to set it up.** Open Claude Code or Codex in your Documents folder and type:
 
-## Open it
+> Set up this workshop starter: github.com/iustinvaliza-del/context-lab
+
+Allow what it asks. It downloads this folder into Documents as `context-lab`, installs Obsidian if you don't have it, adds the folder to Obsidian as a vault and opens it, and tells you when it's done. If Obsidian is already open, it asks you to close it first.
+
+**2. Open the folder for round 1.** Open the new `context-lab` folder in a fresh session, so round 1 starts cold:
 
 | | Desktop app | Terminal |
 |---|---|---|
 | Claude Code | In the Claude desktop app, open the Code tab and choose `context-lab` | Go into the folder and type `claude` |
 | Codex | In the Codex app, open `context-lab` as the project | Go into the folder and type `codex` |
 
-The first time, the tool may ask whether you trust this folder, and it asks before it writes a file. Allow both for this folder: that is how the library gets written.
+The first time, the tool may ask whether you trust this folder, and it asks before it runs a command or writes a file. Allow it for this folder: that is how the library gets written.
 
-Type `/context` in Claude Code or `/status` in Codex to check that it works.
+Type `/context` in Claude Code or `/status` in Codex to see how little is loaded so far.
+
+**Rather do it by hand?** On this page, click the green **Code** button, then **Download ZIP**, and unzip it. On Windows, Extract All puts the folder inside a second folder with the same name: use the inner one, which has this README directly inside. Open it in your tool as in step 2 and type `Follow SETUP.md`. Already use git? `git clone` the HTTPS address from the same button instead.
+
+### For the AI tool setting this up
+
+The person asked you to set up this starter. They are new to this, so say what you are doing in one short line per step.
+
+1. Download this folder into the folder your session runs in, unless they named another place. Git is not needed:
+   - Windows, in PowerShell: `Invoke-WebRequest -UseBasicParsing https://github.com/iustinvaliza-del/context-lab/archive/refs/heads/main.zip -OutFile context-lab.zip; Expand-Archive context-lab.zip -DestinationPath .; Rename-Item context-lab-main context-lab; Remove-Item context-lab.zip`
+   - Mac: `curl -fsSL -o context-lab.zip https://github.com/iustinvaliza-del/context-lab/archive/refs/heads/main.zip && unzip -q context-lab.zip && mv context-lab-main context-lab && rm context-lab.zip`
+
+   If git is installed, `git clone https://github.com/iustinvaliza-del/context-lab` does the same. If a `context-lab` folder is already there, ask them before you replace it. The download needs internet access; if your sandbox blocks it, ask them once for permission.
+2. Follow `context-lab/SETUP.md`.
 
 ## What's in the folder
 
@@ -32,6 +49,7 @@ Type `/context` in Claude Code or `/status` in Codex to check that it works.
 | `.claude/skills/` | The skill you make in round 3, for Claude Code |
 | `.agents/skills/` | The same skill, for Codex |
 | `extras/` | A starter AGENTS.md and two skills for after the workshop |
+| `SETUP.md`, `setup/` | The setup your tool runs in step 1: one script for Windows, one for Mac |
 
 There is no AGENTS.md yet: you write it in round 2. Codex reads AGENTS.md, and Claude Code reads it when the folder has no CLAUDE.md, so one file works in both.
 
@@ -74,7 +92,7 @@ Ask: "What do you know about me and this task, which file did each piece come fr
 
 ## Read it in Obsidian
 
-This folder is already set up as an Obsidian vault. In Obsidian, choose **Open folder as vault** and pick `context-lab`. AGENTS.md, your outputs and the memory notes are all there, and you can read or edit any of them. A note you write in Obsidian goes to `memory/`, where the tool reads it too.
+The setup opens this folder in Obsidian as a vault. AGENTS.md, your outputs and the memory notes are all there, and you can read or edit any of them. A note you write in Obsidian goes to `memory/`, where the tool reads it too. If you skipped the setup, install Obsidian from obsidian.md, choose **Open folder as vault** and pick this folder.
 
 Obsidian hides folders whose names start with a dot, so the skills don't show there: open `.claude/skills/` or `.agents/skills/` in any editor. Without Obsidian, open `memory/` in any editor: the notes are plain files.
 
@@ -90,7 +108,7 @@ That gives you:
 - `wrap-up`: say "wrap up" at the end of a session and it adds a short summary to today's note in `memory/Daily/`.
 - The Memory section in AGENTS.md: every session starts by reading your lessons in `memory/`, and reads the daily notes only when you ask about an earlier session.
 
-In the workshop demo, the daily note is written at the end of every session without asking, by a Claude Code hook. A hook runs a command on your computer, so this starter leaves it out. Once `wrap-up` is a habit, the hooks guide in the Claude Code docs shows how to add one.
+In the workshop demo, the daily note is written at the end of every session without asking, by a Claude Code hook. A hook runs a command on your computer every session, so this starter leaves it out. Once `wrap-up` is a habit, the hooks guide in the Claude Code docs shows how to add one.
 
 ## Keep it private
 

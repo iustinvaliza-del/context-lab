@@ -1,0 +1,3 @@
+# Keep the Windows double-click file in Windows line endings, and the Mac script in Unix ones.
+*.cmd -text
+*.sh text eol=lf
