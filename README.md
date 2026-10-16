@@ -61,10 +61,11 @@ The person asked you to set up this starter for a workshop. They are new to this
 | `memory/Daily/` | One note per day, once you switch on the extras |
 | `.claude/skills/` | The skill you make in round 3, for Claude Code |
 | `.agents/skills/` | The same skill, for Codex |
+| `AGENTS.md` | One line for now; you fill it in from round 2 |
 | `extras/` | A starter AGENTS.md and two skills for after the workshop |
 | `SETUP.md`, `setup/` | The setup your tool runs in step 2: one script for Windows, one for Mac |
 
-There is no AGENTS.md yet: you write it in round 2. Codex reads AGENTS.md, and Claude Code reads it when the folder has no CLAUDE.md, so one file works in both.
+AGENTS.md starts with one line, which makes every session open with "Radu says Hi". You fill in the rest in round 2. Codex reads AGENTS.md, and Claude Code reads it when the folder has no CLAUDE.md, so one file works in both.
 
 ## The five rounds
 
@@ -74,15 +75,17 @@ Pick one task you do every week: prepping a case, researching a company before a
 
 Ask for help with the task in one sentence, the way you would in Cowork, and have the tool save the answer to `outputs/cold.md`. Type `/context` \[`/status`\] and note how little is loaded.
 
+The reply opens with "Radu says Hi". That comes from the one line in `AGENTS.md`, which the tool reads at the start of every session. Delete the line when you no longer want the greeting.
+
 ### Round 2: Create
 
 Ask the tool to interview you:
 
-> Interview me with up to eight questions about this task: who I am, the goal, the constraints, what good looks like, and what is in sources/. Then write an AGENTS.md for this folder, under 40 lines.
+> Interview me with up to eight questions about this task: who I am, the goal, the constraints, what good looks like, and what is in sources/. Then add what you learn to AGENTS.md, keeping it under 40 lines.
 
-Read the AGENTS.md it writes and fix anything wrong in the file itself. Then start fresh with `/clear` \[a new chat\], ask the same one-sentence question, and save the answer to `outputs/warm.md`. Run `/context` \[`/status`\] again and compare with round 1.
+Read what it adds to AGENTS.md and fix anything wrong in the file itself. Then start fresh with `/clear` \[a new chat\], ask the same one-sentence question, and save the answer to `outputs/warm.md`. Run `/context` \[`/status`\] again and compare with round 1.
 
-Stuck? Copy `extras/AGENTS.starter.md` into this folder as `AGENTS.md` and fill in the lines in angle brackets.
+Stuck? Copy what is in `extras/AGENTS.starter.md` into `AGENTS.md`, below the line already there, and fill in the lines in angle brackets.
 
 ### Round 3: Manage
 

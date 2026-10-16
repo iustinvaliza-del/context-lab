@@ -12,4 +12,4 @@ These steps are for Claude Code or Codex. The person asked you to set up this fo
 4. If it fails, explain the error in one sentence. Then tell them the folder works without Obsidian, and that they can install Obsidian later from obsidian.md and choose **Open folder as vault**.
 5. When it finishes, tell them three things: setup is done, Obsidian is open on the starter folder, and round 1 starts fresh. If this session runs in the starter folder, fresh means `/clear` in Claude Code or a new chat in Codex. If it runs somewhere else, give the starter folder's full path and say how to open it: in the Claude desktop app, start a new session in the Code tab and choose the folder; in the Codex app, open it as the project; in a terminal, go into it and type `claude` or `codex`.
 
-Install nothing else, git included. Do not create AGENTS.md or CLAUDE.md, and do not change any other file. The person writes those during the workshop.
+Install nothing else, git included. Do not create CLAUDE.md, do not change AGENTS.md, and do not change any other file. The person writes those during the workshop.
