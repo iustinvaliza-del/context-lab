@@ -1,42 +1,55 @@
 # context-lab
 
-The starter folder for "Context is the job", the IESE Data and AI Club workshop. It is nearly empty on purpose. In the five rounds you write your own AGENTS.md, a skill and memory notes into it, and by the end this folder is your context library. It works the same in Claude Code and in Codex.
+The starter folder for "Context Matters", the IESE Data and AI Club workshop. It is nearly empty on purpose. In the five rounds you write your own AGENTS.md, a skill and memory notes into it, and by the end this folder is your context library. It works the same in Claude Code and in Codex.
 
 Nothing you change in your copy goes back to this repository.
 
 ## Get started
 
-You need Claude Code or Codex installed and signed in. Nothing else: your tool downloads this folder and installs the rest.
+You need Claude Code or Codex installed and signed in. Nothing else: no git, no folders to make, nothing to install by hand. Your tool does the rest.
 
-**1. Ask your tool to set it up.** Open Claude Code or Codex in your Documents folder and type:
-
-> Set up this workshop starter: github.com/iustinvaliza-del/context-lab
-
-Allow what it asks. It downloads this folder into Documents as `context-lab`, installs Obsidian if you don't have it, adds the folder to Obsidian as a vault and opens it, and tells you when it's done. If Obsidian is already open, it asks you to close it first.
-
-**2. Open the folder for round 1.** Open the new `context-lab` folder in a fresh session, so round 1 starts cold:
+**1. Open your tool.** Any folder works.
 
 | | Desktop app | Terminal |
 |---|---|---|
-| Claude Code | In the Claude desktop app, open the Code tab and choose `context-lab` | Go into the folder and type `claude` |
-| Codex | In the Codex app, open `context-lab` as the project | Go into the folder and type `codex` |
+| Claude Code | In the Claude desktop app, open the Code tab and choose any folder, for example your Desktop | Type `claude` |
+| Codex | Open the Codex app on any folder, for example your Desktop | Type `codex` |
 
-The first time, the tool may ask whether you trust this folder, and it asks before it runs a command or writes a file. Allow it for this folder: that is how the library gets written.
+**2. Type one line.**
 
-Type `/context` in Claude Code or `/status` in Codex to see how little is loaded so far.
+> Set up this starter on my Desktop: github.com/iustinvaliza-del/context-lab
 
-**Rather do it by hand?** On this page, click the green **Code** button, then **Download ZIP**, and unzip it. On Windows, Extract All puts the folder inside a second folder with the same name: use the inner one, which has this README directly inside. Open it in your tool as in step 2 and type `Follow SETUP.md`. Already use git? `git clone` the HTTPS address from the same button instead.
+Allow what it asks. It makes a `context-lab` folder on your Desktop, copies this starter into it, installs Obsidian if you don't have it, opens the folder in Obsidian, and tells you when it's done. If Obsidian is already open, it asks you to close it first.
+
+**3. Open the folder for round 1.** Start a new session in `context-lab`, so round 1 starts cold. The tool tells you how when it finishes:
+
+| | Desktop app | Terminal |
+|---|---|---|
+| Claude Code | In the Code tab, start a new session and choose `context-lab` on your Desktop | Go into the folder and type `claude` |
+| Codex | Open `context-lab` on your Desktop as the project | Go into the folder and type `codex` |
+
+If your tool was already running in `context-lab`, `/clear` in Claude Code or a new chat in Codex is enough. The first time, the tool may ask whether you trust this folder, and it asks before it runs a command or writes a file. Allow it for this folder: that is how the library gets written. Then type `/context` in Claude Code or `/status` in Codex to see how little is loaded so far.
+
+**Rather do it by hand?** On this page, click the green **Code** button, then **Download ZIP**, and unzip it. Rename the `context-lab-main` folder to `context-lab` and move it to your Desktop (on Windows, Extract All adds a second folder with the same name: use the inner one, which has this README directly inside). Then open your tool in it and type `Follow SETUP.md`.
 
 ### For the AI tool setting this up
 
-The person asked you to set up this starter. They are new to this, so say what you are doing in one short line per step.
+The person asked you to set up this starter for a workshop. They are new to this and should not have to do anything by hand except approve your steps, so do every step yourself and say what you are doing in one short line per step. Nothing needs installing except what `SETUP.md` installs, and git is optional.
 
-1. Download this folder into the folder your session runs in, unless they named another place. Git is not needed:
-   - Windows, in PowerShell: `Invoke-WebRequest -UseBasicParsing https://github.com/iustinvaliza-del/context-lab/archive/refs/heads/main.zip -OutFile context-lab.zip; Expand-Archive context-lab.zip -DestinationPath .; Rename-Item context-lab-main context-lab; Remove-Item context-lab.zip`
-   - Mac: `curl -fsSL -o context-lab.zip https://github.com/iustinvaliza-del/context-lab/archive/refs/heads/main.zip && unzip -q context-lab.zip && mv context-lab-main context-lab && rm context-lab.zip`
-
-   If git is installed, `git clone https://github.com/iustinvaliza-del/context-lab` does the same. If a `context-lab` folder is already there, ask them before you replace it. The download needs internet access; if your sandbox blocks it, ask them once for permission.
-2. Follow `context-lab/SETUP.md`.
+1. **Find the place.** The starter goes in a folder called `context-lab` on their Desktop, unless they named another place.
+   - Windows: get the Desktop's path with `powershell -NoProfile -Command "[Environment]::GetFolderPath('Desktop')"`. It is often inside OneDrive, so do not assume `C:\Users\<name>\Desktop`.
+   - Mac: `~/Desktop`. The Mac may ask whether your app may use the Desktop folder; tell them to allow it.
+   - If the folder your session runs in is itself an empty folder called `context-lab`, use that one.
+   - If a `context-lab` folder already exists there and holds files, ask before you change anything.
+   - If your sandbox blocks the internet or writing outside the folder you were opened in, ask them once for permission.
+2. **Get the files** into that folder, written `<folder>` below.
+   - With git: `git clone https://github.com/iustinvaliza-del/context-lab "<folder>"`.
+     If the folder exists and git says it is not empty (your tool may have made a `.claude` folder there for its own settings), run these three inside it instead: `git init -b main`, `git remote add origin https://github.com/iustinvaliza-del/context-lab`, `git pull origin main`.
+   - On a Mac, run `xcode-select -p` before any git command. If it fails, git is not installed and calling it opens an install window, so use the ZIP.
+   - Without git, do not install it. Download the ZIP, which unzips to a `context-lab-main` folder, and put what is inside that folder into `<folder>`:
+     - Windows, in PowerShell: `$f="<folder>"; $z="$env:TEMP\context-lab.zip"; $u="$env:TEMP\context-lab-unzip"; Invoke-WebRequest -UseBasicParsing https://github.com/iustinvaliza-del/context-lab/archive/refs/heads/main.zip -OutFile $z; Expand-Archive $z -DestinationPath $u -Force; New-Item -ItemType Directory -Force $f | Out-Null; Get-ChildItem -Force "$u\context-lab-main" | Copy-Item -Destination $f -Recurse -Force; Remove-Item $z, $u -Recurse -Force`
+     - Mac: `f="<folder>"; mkdir -p "$f" && curl -fsSL -o /tmp/context-lab.zip https://github.com/iustinvaliza-del/context-lab/archive/refs/heads/main.zip && unzip -q -o /tmp/context-lab.zip -d /tmp/context-lab-unzip && cp -R /tmp/context-lab-unzip/context-lab-main/. "$f" && rm -rf /tmp/context-lab.zip /tmp/context-lab-unzip`
+3. **Run the setup.** Follow `SETUP.md` in that folder. It installs Obsidian if it is missing, opens the folder as a vault, and ends by telling them how to open the folder for round 1.
 
 ## What's in the folder
 
@@ -49,7 +62,7 @@ The person asked you to set up this starter. They are new to this, so say what y
 | `.claude/skills/` | The skill you make in round 3, for Claude Code |
 | `.agents/skills/` | The same skill, for Codex |
 | `extras/` | A starter AGENTS.md and two skills for after the workshop |
-| `SETUP.md`, `setup/` | The setup your tool runs in step 1: one script for Windows, one for Mac |
+| `SETUP.md`, `setup/` | The setup your tool runs in step 2: one script for Windows, one for Mac |
 
 There is no AGENTS.md yet: you write it in round 2. Codex reads AGENTS.md, and Claude Code reads it when the folder has no CLAUDE.md, so one file works in both.
 
