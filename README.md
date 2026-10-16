@@ -1,6 +1,6 @@
 # context-lab
 
-The starter folder for "Context Matters", the IESE Data and AI Club workshop. It is nearly empty on purpose. In the five rounds you write your own AGENTS.md, a skill and memory notes into it, and by the end this folder is your context library. It works the same in Claude Code and in Codex.
+The starter folder for "Context Matters", the IESE Data and AI Club workshop. It is nearly empty on purpose. In the five rounds you write your own AGENTS.md and a skill into it, the tool starts keeping memory notes on its own, and by the end this folder is your context library. It works the same in Claude Code and in Codex.
 
 Nothing you change in your copy goes back to this repository.
 
@@ -57,12 +57,12 @@ The person asked you to set up this starter for a workshop. They are new to this
 |---|---|
 | `sources/` | Two or three files for your task |
 | `outputs/` | The answers you save in each round |
-| `memory/` | Lessons the tool saves when you correct it, one note per lesson |
-| `memory/Daily/` | One note per day, once you switch on the extras |
+| `memory/` | Lessons the tool saves on its own from round 2, one note per lesson, kept tidy |
+| `memory/Daily/` | One note per day, a line for each task the tool finishes |
 | `.claude/skills/` | The skill you make in round 3, for Claude Code |
 | `.agents/skills/` | The same skill, for Codex |
 | `AGENTS.md` | One line for now; you fill it in from round 2 |
-| `extras/` | A starter AGENTS.md and two skills for after the workshop |
+| `extras/` | The AGENTS.md template that round 2 fills in |
 | `SETUP.md`, `setup/` | The setup your tool runs in step 2: one script for Windows, one for Mac |
 
 AGENTS.md starts with one line, which makes every session open with "Radu says Hi". You fill in the rest in round 2. Codex reads AGENTS.md, and Claude Code reads it when the folder has no CLAUDE.md, so one file works in both.
@@ -81,9 +81,9 @@ The reply opens with "Radu says Hi". That comes from the one line in `AGENTS.md`
 
 Ask the tool to interview you:
 
-> Interview me with up to eight questions about this task: who I am, the goal, the constraints, what good looks like, and what is in sources/. Then add what you learn to AGENTS.md, keeping it under 40 lines.
+> Interview me with up to eight questions about this task: who I am, the goal, the constraints, what good looks like, and what is in sources/. Then fill in the template in extras/AGENTS.starter.md and add it to AGENTS.md, under 40 lines.
 
-Read what it adds to AGENTS.md and fix anything wrong in the file itself. Then start fresh with `/clear` \[a new chat\], ask the same one-sentence question, and save the answer to `outputs/warm.md`. Run `/context` \[`/status`\] again and compare with round 1.
+Read what it adds to AGENTS.md and fix anything wrong in the file itself. Leave the Memory section at the end as it is: from now on the tool saves what it learns in `memory/`, adds a line to today's note in `memory/Daily/` when it finishes a task, and keeps the notes tidy, without being asked. Then start fresh with `/clear` \[a new chat\], ask the same one-sentence question, and save the answer to `outputs/warm.md`. Run `/context` \[`/status`\] again and compare with round 1.
 
 Stuck? Copy what is in `extras/AGENTS.starter.md` into `AGENTS.md`, below the line already there, and fill in the lines in angle brackets.
 
@@ -98,33 +98,23 @@ The skill lands in `.claude/skills/<task>/SKILL.md` \[`.agents/skills/<task>/SKI
 ### Round 4: Maintain
 
 1. Ask the tool to do the task for real and save the result to `outputs/`.
-2. Pick one thing it got wrong, tell it, then ask: "Update AGENTS.md or the skill so this does not happen again, and save the lesson as a dated note in memory/." Read both changes.
+2. Pick one thing it got wrong, tell it, then ask: "Update AGENTS.md or the skill so this does not happen again." Read the change, then open `memory/`: the lesson is already saved as a note, because the Memory section in AGENTS.md asks for that.
 3. Run `/context` \[`/status`\], then `/compact`, then check again. In Claude Code, add focus instructions: `/compact keep the decisions and the open questions`.
 4. Start fresh with `/clear` \[a new chat\] and ask a follow-up. The correction holds, because it lives in a file.
 
 ### Round 5: Understand
 
-Ask: "What do you know about me and this task, which file did each piece come from, and what are you assuming?" Correct one wrong assumption in the file, not in the chat. Then try a side question with `/btw` \[`/side`\]: it answers without adding to the main conversation.
+Ask: "What do you know about me and this task, which file did each piece come from, and what are you assuming?" Correct one wrong assumption in the file, not in the chat. Then try a side question with `/btw` \[`/side`\]: it answers without adding to the main conversation. Open the folder in Obsidian: every note the tool wrote is there, already tidy.
 
 ## Read it in Obsidian
 
-The setup opens this folder in Obsidian as a vault. AGENTS.md, your outputs and the memory notes are all there, and you can read or edit any of them. A note you write in Obsidian goes to `memory/`, where the tool reads it too. If you skipped the setup, install Obsidian from obsidian.md, choose **Open folder as vault** and pick this folder.
+The setup opens this folder in Obsidian as a vault. AGENTS.md, your outputs and the memory notes are all there. The tool writes the notes and keeps them tidy: it updates old notes instead of adding repeats, merges notes that say the same thing and fixes links that point nowhere. Obsidian is where you read and search them. You can still edit any note, and the tool reads your edits too. If you skipped the setup, install Obsidian from obsidian.md, choose **Open folder as vault** and pick this folder.
 
 Obsidian hides folders whose names start with a dot, so the skills don't show there: open `.claude/skills/` or `.agents/skills/` in any editor. Without Obsidian, open `memory/` in any editor: the notes are plain files.
 
-## After the workshop: switch on the extras
+## After the workshop
 
-Open the tool in this folder and ask:
-
-> Copy each skill folder in extras/skills/ into .claude/skills/ and into .agents/skills/. Then make sure my AGENTS.md has the Memory section from extras/AGENTS.starter.md, and add this line to it: "Read memory/Daily/ only when I ask about an earlier session."
-
-That gives you:
-
-- `save-lesson`: when you correct the tool, it fixes AGENTS.md or the skill, then saves the lesson as a dated note in `memory/`.
-- `wrap-up`: say "wrap up" at the end of a session and it adds a short summary to today's note in `memory/Daily/`.
-- The Memory section in AGENTS.md: every session starts by reading your lessons in `memory/`, and reads the daily notes only when you ask about an earlier session.
-
-In the workshop demo, the daily note is written at the end of every session without asking, by a Claude Code hook. A hook runs a command on your computer every session, so this starter leaves it out. Once `wrap-up` is a habit, the hooks guide in the Claude Code docs shows how to add one.
+Nothing to switch on. The Memory section that round 2 added to AGENTS.md keeps working in every session. To use the library for a second task, add a section for it to AGENTS.md and a skill for its steps, the same way as in rounds 2 and 3.
 
 ## Keep it private
 
