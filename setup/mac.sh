@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Sets up context-lab on a Mac: installs Obsidian if it is missing, adds this
-# folder to Obsidian as a vault, and opens it. Safe to run more than once.
-# Run it from the context-lab folder:  bash setup/mac.sh
+# Sets up the workshop folder on a Mac: installs git and Obsidian if they are missing,
+# adds this folder to Obsidian as a vault, and opens it. Safe to run more than once.
+# Run it from the workshop folder:  bash setup/mac.sh
 # For testing: CL_CONFIG=<file> writes the vault list there instead of Obsidian's
 # own file, CL_NO_LAUNCH=1 skips opening Obsidian, CL_RESOLVE_ONLY=1 prints the
 # installer address and stops.
@@ -116,9 +116,21 @@ if [[ "${CL_RESOLVE_ONLY:-0}" == 1 ]]; then
   exit 0
 fi
 
+# Git comes with Apple's command line tools. macOS installs them only through its own window,
+# which asks for one click on Install; the rest of the setup does not need git, so carry on.
+if xcode-select -p >/dev/null 2>&1; then
+  say "Git is already installed."
+else
+  xcode-select --install >/dev/null 2>&1 || true
+  say "A window from Apple asks to install the command line developer tools, which include git. Click Install: it is the only click this setup needs."
+fi
+
+# Obsidian reads its vault list only when it starts, so quit it; it saves notes as you type.
 if [[ "$REAL_CONFIG" == 1 ]] && pgrep -x Obsidian >/dev/null; then
-  say "Obsidian is open. Quit it with Cmd+Q, then run this setup again."
-  exit 2
+  say "Closing Obsidian so it picks up this folder when it opens again."
+  osascript -e 'quit app "Obsidian"' >/dev/null 2>&1 || true
+  for _ in 1 2 3 4 5 6; do pgrep -x Obsidian >/dev/null || break; sleep 1; done
+  pkill -x Obsidian 2>/dev/null || true
 fi
 
 # The vault goes in first, so Obsidian opens this folder the first time it starts.
@@ -137,4 +149,4 @@ if [[ "${CL_NO_LAUNCH:-0}" != 1 ]]; then
   open "$APP"
   say "Obsidian is opening on this folder."
 fi
-say "Done. Git is not needed for the workshop, so nothing else was installed."
+say "Done. Obsidian is open on this folder."

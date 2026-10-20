@@ -1,15 +1,12 @@
 # Set up this folder
 
-These steps are for Claude Code or Codex. The person asked you to set up this folder for a workshop. They are new to this, so tell them what you are doing in plain words, one short line per step.
+These steps are for Claude Code or Codex. The person asked you to set up this folder for a workshop. They are new to this and must not have to do anything by hand except allow your steps, so do every step yourself and tell them what you are doing in plain words, one short line per step.
 
-1. Find the folder that holds this file: that is the starter folder. Usually it is `context-lab` on their Desktop, where you just put it. If it sits one folder down, for example in `context-lab-main` inside it, the inner folder is the one.
-2. Run the setup script for this computer, from inside the starter folder:
+1. Find the folder that holds this file: that is the workshop folder. It is the folder they made and opened, whatever they called it. If it sits one folder down, for example in `context-lab-main` inside it, the inner folder is the one.
+2. Run the setup script for their computer from the workshop folder. It installs git and Obsidian if they are missing, adds the folder to Obsidian as a vault and opens Obsidian on it. It can take a few minutes; tell them so.
    - Windows: `powershell -NoProfile -ExecutionPolicy Bypass -File setup\windows.ps1`
-   - Mac: `bash setup/mac.sh`
+   - Mac: `bash setup/mac.sh`. If git was missing, a window from Apple asks to install the command line developer tools: tell them to click Install. It is the only click setup needs.
+   If the script stops with an error, read its last lines, fix the cause and run it again. If Obsidian still will not install, download it from obsidian.md yourself, run the installer, and run the script again: it adds the folder and opens it.
+3. Tell them three things: setup is done and Obsidian is open on their folder, they can ask you how anything in this folder works at any time, and round 1 starts fresh. If this session runs in the workshop folder, fresh means `/clear` in Claude Code or a new chat in Codex. If it runs somewhere else, give the folder's full path and say how to open it: in the Claude desktop app, start a new session in the Code tab and choose the folder; in the Codex app, open it as the project; in a terminal, go into it and type `claude` or `codex`.
 
-   The script installs Obsidian if it is missing, adds this folder to Obsidian as a vault, and opens it. It downloads Obsidian and writes Obsidian's own settings outside this folder, so it needs internet access. If your sandbox blocks that, ask them once for permission to run it outside the sandbox. The download can take a few minutes.
-3. If it stops because Obsidian is open, ask them to close Obsidian, then run it again.
-4. If it fails, explain the error in one sentence. Then tell them the folder works without Obsidian, and that they can install Obsidian later from obsidian.md and choose **Open folder as vault**.
-5. When it finishes, tell them three things: setup is done, Obsidian is open on the starter folder, and round 1 starts fresh. If this session runs in the starter folder, fresh means `/clear` in Claude Code or a new chat in Codex. If it runs somewhere else, give the starter folder's full path and say how to open it: in the Claude desktop app, start a new session in the Code tab and choose the folder; in the Codex app, open it as the project; in a terminal, go into it and type `claude` or `codex`.
-
-Install nothing else, git included. Do not create CLAUDE.md, do not change AGENTS.md, and do not change any other file. The person writes those during the workshop.
+Do not create CLAUDE.md, do not change AGENTS.md or how-it-works/, and do not change any other file. The person writes those during the workshop.

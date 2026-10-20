@@ -1,6 +1,7 @@
-# Sets up context-lab on Windows: installs Obsidian if it is missing, adds this
-# folder to Obsidian as a vault, and opens it. Safe to run more than once.
-# Run it from the context-lab folder:
+# Sets up the workshop folder on Windows: installs git and Obsidian if they are missing,
+# adds this folder to Obsidian as a vault, and opens it. Safe to run more than once.
+# Nothing here needs the person to click: both install for this user only, with no admin prompt.
+# Run it from the workshop folder:
 #   powershell -NoProfile -ExecutionPolicy Bypass -File setup\windows.ps1
 param(
   [string]$ConfigPath = "",  # for testing: write the vault list here instead of Obsidian's own file
@@ -62,6 +63,42 @@ function Get-InstallerUrl {
     return "https://github.com/obsidianmd/obsidian-releases/releases/download/v$v/Obsidian-$v.exe"
   }
   throw 'could not find the address of the Obsidian installer'
+}
+
+function Find-Git {
+  $cmd = Get-Command git -ErrorAction SilentlyContinue
+  if ($cmd) { return $cmd.Source }
+  $candidates = @(
+    (Join-Path $env:LOCALAPPDATA 'Programs\Git\cmd\git.exe'),
+    (Join-Path $env:ProgramFiles 'Git\cmd\git.exe')
+  )
+  foreach ($c in $candidates) { if (Test-Path $c) { return $c } }
+  return $null
+}
+
+# Git for Windows, for this user only (no admin prompt): winget first, then the installer
+# from the latest GitHub release.
+function Install-Git {
+  if (Get-Command winget -ErrorAction SilentlyContinue) {
+    Say 'Installing git with winget.'
+    & winget install --id Git.Git --exact --source winget --scope user --silent --accept-package-agreements --accept-source-agreements --disable-interactivity | Out-Host
+    $exe = Find-Git
+    if ($exe) { return $exe }
+    Say 'winget did not finish the install, so downloading the git installer directly.'
+  }
+  $rel = Invoke-RestMethod -Uri 'https://api.github.com/repos/git-for-windows/git/releases/latest' -UseBasicParsing
+  $pattern = if ($env:PROCESSOR_ARCHITECTURE -eq 'ARM64') { '^Git-[0-9.]+(\.windows\.[0-9]+)?-arm64\.exe$' } else { '^Git-[0-9.]+(\.windows\.[0-9]+)?-64-bit\.exe$' }
+  $asset = $rel.assets | Where-Object { $_.name -match $pattern } | Select-Object -First 1
+  if (-not $asset) { throw 'could not find the git installer in the latest release' }
+  $file = Join-Path $env:TEMP $asset.name
+  Say "Downloading $($asset.browser_download_url)."
+  Invoke-WebRequest -Uri $asset.browser_download_url -OutFile $file -UseBasicParsing
+  Say 'Running the git installer.'
+  Start-Process -FilePath $file -ArgumentList '/VERYSILENT', '/NORESTART', '/SUPPRESSMSGBOXES', '/CURRENTUSER' -Wait
+  Remove-Item $file -ErrorAction SilentlyContinue
+  $exe = Find-Git
+  if (-not $exe) { throw 'the git installer ran, but git.exe cannot be found afterwards' }
+  return $exe
 }
 
 function Install-Obsidian {
@@ -126,9 +163,16 @@ try {
 
   if ($ResolveOnly) { Get-InstallerUrl; exit 0 }
 
+  $git = Find-Git
+  if ($git) { Say "Git is already installed: $git" }
+  else { $git = Install-Git; Say "Git is installed: $git. A new terminal finds it as git; this one needs the full path." }
+
+  # Obsidian reads its vault list only when it starts, so close it; it saves notes as you type.
   if ($realConfig -and (Get-Process -Name Obsidian -ErrorAction SilentlyContinue)) {
-    Say 'Obsidian is open. Close all its windows, then run this setup again.'
-    exit 2
+    Say 'Closing Obsidian so it picks up this folder when it opens again.'
+    Get-Process -Name Obsidian -ErrorAction SilentlyContinue | ForEach-Object { [void]$_.CloseMainWindow() }
+    Start-Sleep -Seconds 3
+    Get-Process -Name Obsidian -ErrorAction SilentlyContinue | Stop-Process -Force
   }
 
   # The vault goes in first, so an installer that opens Obsidian right away opens this folder.
@@ -144,7 +188,7 @@ try {
     if (-not (Get-Process -Name Obsidian -ErrorAction SilentlyContinue)) { Start-Process -FilePath $exe }
     Say 'Obsidian is opening on this folder.'
   }
-  Say 'Done. Git is not needed for the workshop, so nothing else was installed.'
+  Say 'Done. Git and Obsidian are ready, and Obsidian is open on this folder.'
   exit 0
 }
 catch {
