@@ -6,7 +6,7 @@ A markdown file (`.md`) is a plain text file with a few marks for structure:
 - `-` makes a bullet, `1.` a numbered step.
 - `**word**` makes a word bold.
 
-That is most of it. Any text editor opens it (Notepad, TextEdit, VS Code), and Obsidian shows it with the marks rendered.
+That is most of it. Any text editor opens it (Notepad, TextEdit). Setup installed MarkText, which shows a markdown file with the marks rendered and lets the person edit it like a document; Obsidian does the same for the Agent Memory folder.
 
 ## Why it is the standard
 

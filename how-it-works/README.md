@@ -5,7 +5,7 @@ These files are for you, the AI tool, not for the person. The person is new to t
 ## How to explain
 
 - Answer the question they asked, in three to six short steps or sentences. One idea per step.
-- Use their own folder as the example: "you can see it in `memory/`", "open `AGENTS.md` and look at the first line".
+- Use their own folder as the example: "you can see it in Agent Memory", "open `AGENTS.md` and look at the first line".
 - No jargon. If you must use a word like "context", "session" or "skill", say what it means in the same sentence.
 - No comparisons to films, sports or anything else. Say what the thing does.
 - End with one offer of the next step, for example "Want to see where that note is?" or "Want to try changing it?". Never more than one offer.
@@ -20,10 +20,12 @@ These files are for you, the AI tool, not for the person. The person is new to t
 | What a .md file is, why everything here is one | `02-markdown.md` |
 | AGENTS.md, "Radu says Hi", why the tool knows things about them | `03-agents-md.md` |
 | Skills, the prep-case skill, `.claude/skills/` | `04-skills.md` |
-| Memory, notes, `memory/`, the daily note, how it remembers | `05-memory.md` |
+| Memory, notes, the Agent Memory folder, `How to keep notes.md`, the daily note, how it remembers | `05-memory.md` |
 | Context, `/context`, `/status`, `/clear`, `/compact`, why answers change | `06-context.md` |
 | What each folder is for, the five rounds | `07-this-folder.md` |
-| Obsidian | `08-obsidian.md` |
+| Obsidian, the vault, MarkText, opening a file | `08-obsidian.md` |
+| The case pipeline, Blackboard, the `IESE/` folder and its year folders, the saved login, the workbook checks | `09-case-pipeline.md` |
+| The database, searching their files, `database/SHAPE.md`, changing the database's shape or how it looks | `10-database.md` |
 
 ## Do not change these files
 

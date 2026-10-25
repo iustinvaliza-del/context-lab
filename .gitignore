@@ -2,8 +2,18 @@
 sources/*
 !sources/.gitkeep
 
-# Obsidian's window layout changes every time you open it
-.obsidian/workspace*.json
+# Your IESE courses from Blackboard (copyrighted cases, your notes) and the pipeline's list of downloaded files
+IESE/
+pipeline/.state/
+__pycache__/
+
+# Your database (your lists and the search over your files) and its backup copies
+database/*.db
+database/*.db-journal
+database/backups/
+
+# Claude Code's settings for this computer only (setup adds the Agent Memory folder here)
+.claude/settings.local.json
 
 # System files
 .DS_Store

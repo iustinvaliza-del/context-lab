@@ -16,6 +16,6 @@ The same model, asked the same sentence, gives a better answer when its context 
 | Start fresh in the same folder | `/clear` | a new chat |
 | Shrink a long conversation into a summary and keep going | `/compact` | `/compact` |
 
-Use `/clear` between tasks so an old conversation does not mix into a new one. Use `/compact` when one long task fills the window.
+Use `/clear` between tasks so an old conversation does not mix into a new one. In one long task, run the `summary` skill (type `/summary` in Claude Code, or ask Codex to summarize and compact) before the window is half full: it writes what matters to today's note in Agent Memory's `Daily/` folder, then you type `/compact`. Past about half the window the model gets worse at using what it has, so compacting from a clean summary keeps only the good context.
 
 How to say it: "Type `/context`. The list shows what I am looking at right now: my own instructions, your `AGENTS.md`, and this conversation. Nothing else."

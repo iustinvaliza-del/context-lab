@@ -12,13 +12,12 @@
 ## Constraints
 - <deadlines, things I never do>
 
-## Sources and outputs
-- Read the files in sources/ before answering.
-- Save finished work to outputs/, with the date in the file name.
+## Files and outputs
+- My IESE courses are in IESE/, one folder per year (1st year, 2nd year) and one per course inside it. The prep-case skill fetches and preps a session.
+- For any other task, read its files in sources/ first.
+- Save work I ask to keep to outputs/.
 
 ## Memory (keep this section as it is)
-- Before a task, read the notes in memory/ that relate to it.
-- When I correct you or we settle something, save it without asking: one short note per lesson in memory/, named YYYY-MM-DD-short-title.md.
-- When you finish a task, add one line to today's note in memory/Daily/ (YYYY-MM-DD.md): what we did and what is still open.
-- Keep the notes tidy yourself whenever you write one: update an old note instead of adding a repeat, merge notes that say the same thing, link related notes with [[note name]], and fix links that point to no note. Never ask me to fix a note.
-- Read memory/Daily/ only when I ask about an earlier session.
+- My memory is my Agent Memory folder: <full path of my Agent Memory folder>. It sits outside this project, so every project can read it.
+- At the start of every session, read How to keep notes.md in that folder and follow it.
+- Save notes there without asking.

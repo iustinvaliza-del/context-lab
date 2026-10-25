@@ -29,7 +29,7 @@ How to say it: "The session forgets, the project stays. Whatever should last goe
 ## Where things are in the desktop app
 
 - The tabs Chat, Cowork and Code are at the top.
-- In the Code tab, the folder (the project) is chosen with **Select folder**, with Environment set to **Local**.
+- In the Code tab, the folder (the project) is chosen by clicking the **folder name** under the box where you type; a laptop icon next to it means it runs on your own computer.
 - Next to the send button is the permission mode: how much Claude may do without asking.
 - If the person's app shows different words, use the words on their screen.
 
