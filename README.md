@@ -93,7 +93,7 @@ Where a command differs, the Codex one follows in brackets.
 
 ### Round 1: Run
 
-Ask the sentence above, with the course and session of your next class. The first time, a Blackboard window opens: sign in with your IESE email and password, and approve the phone prompt if Microsoft asks. The pipeline sets up that course first in `library/IESE/1st year/` or `library/IESE/2nd year/`, fetches the session and preps it, and downloads all your other courses in the background (more in [The case pipeline](#the-case-pipeline) below). Say yes when it offers to save your login.
+Ask the sentence above, with the course and session of your next class. The first time, a Blackboard window opens: sign in with your IESE email and password, and approve the phone prompt if Microsoft asks. The pipeline reads your class schedule from my.iese.edu, sets up that course first in `library/IESE/1st year/` or `library/IESE/2nd year/`, fetches the session and preps it, and downloads all your other courses in the background (more in [The case pipeline](#the-case-pipeline) below). Say yes when it offers to save your login.
 
 When the notes are done, ask it to save a copy to `Deliverables/<date>/workshop/first.md`. Type `/context` \[`/status`\]: it read the prep-case skill, because the task called for it.
 
@@ -134,7 +134,7 @@ Open `Deliverables/<date>/workshop/first.md` and `Deliverables/<date>/workshop/f
 
 Ask: "Prep the case for session 5 of Corporate Finance" (any course and session). The `prep-case` skill does the rest:
 
-1. **The first time**, it asks which course and session you have next, if you did not say. A Blackboard window opens: sign in with your IESE email and password and approve the phone prompt if Microsoft asks. The pipeline lists every course you are enrolled in, sets up the one you have next first (its folder in `library/IESE/1st year/` or `library/IESE/2nd year/`, or `library/IESE/Other courses/` when Blackboard does not say the year, and its syllabus), fetches that session and preps it. Meanwhile it downloads all your other courses in the background.
+1. **The first time**, a Blackboard window opens: sign in with your IESE email and password and approve the phone prompt if Microsoft asks. The pipeline reads your class schedule for the year from my.iese.edu into `library/IESE/SCHEDULE.md`, so "prep tomorrow's case" works too; it asks which course and session only when the schedule cannot say. It lists every course you are enrolled in, sets up the one you have next first (its folder in `library/IESE/1st year/` or `library/IESE/2nd year/`, or `library/IESE/Other courses/` when Blackboard does not say the year, and its syllabus), fetches that session and preps it. Meanwhile it downloads all your other courses in the background.
 2. **It asks whether to save your login.** Say yes and a small window asks for your IESE email and password; they go into Windows Credential Manager or the Mac Keychain, never into a file or the chat. From then on it signs in by itself. Say no and the window opens again whenever Blackboard's session has expired. To remove them: `uv run pipeline/blackboard.py forget-login`.
 3. **Every prep** downloads the session's latest files first, then writes pre-notes (what the case is about, in plain words) and case notes by question, with your positions left blank. For cases with numbers it computes them in Python and builds an Excel workbook whose Checks sheet Python recalculates; a number is quoted only when every check reads OK.
 

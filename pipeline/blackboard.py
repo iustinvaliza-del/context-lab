@@ -3,6 +3,7 @@
 # dependencies = [
 #   "playwright>=1.45",
 #   "keyring>=24",
+#   "tzdata",
 # ]
 # ///
 """Blackboard downloader for the case pipeline.
@@ -18,6 +19,9 @@ through Blackboard's REST API.
                                                    download one session's folder (the case to prep)
     uv run pipeline/blackboard.py rest             download everything else, one file at a time
     uv run pipeline/blackboard.py list             print the courses and their folders
+    uv run pipeline/blackboard.py schedule         read this year's class agenda from my.iese.edu and
+                                                   write library/IESE/SCHEDULE.md: every class by date,
+                                                   with its course folder and session number
     uv run pipeline/blackboard.py save-login       ask for the IESE email and password in a small
                                                    window and keep them in the computer's password
                                                    store (Windows Credential Manager, Mac Keychain)
@@ -56,7 +60,7 @@ import re
 import subprocess
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -89,6 +93,9 @@ COURSE_LIST = STATE / "courses.json"
 BB_BASE = (os.environ.get("BLACKBOARD_URL") or "https://vc.iese.edu").rstrip("/")
 BB_API = f"{BB_BASE}/learn/api/public/v1"
 BB_UI = f"{BB_BASE}/ultra/course"
+MY_IESE = (os.environ.get("MY_IESE_URL") or "https://my.iese.edu").rstrip("/")
+AGENDA = MY_IESE + "/Home/AgendaMainV2?start={start}&end={end}"
+SCHEDULE = IESE / "SCHEDULE.md"
 
 KEYRING_SERVICE = "context-lab IESE Blackboard"
 WINDOW_MINUTES = 9  # under the 10-minute limit Claude Code puts on one command
@@ -865,6 +872,172 @@ def cmd_check() -> int:
     return 0
 
 
+# ─── Schedule (my.iese.edu agenda) ──────────────────────────────────────────
+
+def _agenda_json(page, url: str):
+    """The agenda as JSON, fetched from inside the signed-in my.iese.edu page; None when not signed in."""
+    try:
+        text = page.evaluate("""async (u) => {
+            const r = await fetch(u, {credentials: "include", headers: {"Accept": "application/json"}});
+            return r.ok ? await r.text() : "";
+        }""", url)
+        return json.loads(text) if text and text.lstrip()[:1] in "[{" else None
+    except Exception:
+        return None
+
+
+def fetch_agenda(pw, context, allow_window: bool):
+    """Sign in to my.iese.edu with the same Microsoft account as Blackboard and read the year's agenda.
+    Returns (agenda, context); the context may be a new, visible one when a window was needed."""
+    first = current_academic_year() - 1
+    url = AGENDA.format(start=f"{first}-08-01", end=f"{first + 1}-07-31")
+    page = context.new_page()
+    try:
+        page.goto(MY_IESE + "/", wait_until="domcontentloaded", timeout=30000)
+        settle(page)
+        for _ in range(3):  # the Microsoft sign-in carried over from Blackboard can take a few redirects
+            agenda = _agenda_json(page, url)
+            if agenda is not None:
+                return agenda, context
+            page.wait_for_timeout(3000)
+    except Exception:
+        pass
+    context.close()
+    if not allow_window or not can_show_window():
+        raise NotSignedIn("not signed in to my.iese.edu, and no sign-in window was allowed")
+    context = launch(pw, headless=False)
+    page = context.pages[0] if context.pages else context.new_page()
+    page.goto(MY_IESE + "/", wait_until="domcontentloaded", timeout=30000)
+    say(f"[schedule] A my.iese.edu window is open. If it asks, sign in there with your IESE email. "
+        f"Waiting up to {WINDOW_MINUTES} minutes.")
+    deadline = time.time() + WINDOW_MINUTES * 60
+    while time.time() < deadline:
+        agenda = _agenda_json(page, url)
+        if agenda is not None:
+            return agenda, context
+        page.wait_for_timeout(5000)
+    context.close()
+    raise NotSignedIn("the my.iese.edu window was not signed in")
+
+
+def agenda_events(data) -> list[dict]:
+    """Every event in the agenda, however it is nested (it comes as one entry per day)."""
+    found = []
+    if isinstance(data, dict):
+        if data.get("startDate") and ("title" in data or "course" in data):
+            found.append(data)
+        else:
+            for v in data.values():
+                found += agenda_events(v)
+    elif isinstance(data, list):
+        for v in data:
+            found += agenda_events(v)
+    return found
+
+
+def _local(stamp: str) -> datetime | None:
+    """An agenda time in Madrid time. Times with no zone are already local."""
+    try:
+        when = datetime.fromisoformat((stamp or "").replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if when.tzinfo:
+        try:
+            from zoneinfo import ZoneInfo
+            when = when.astimezone(ZoneInfo("Europe/Madrid"))
+        except Exception:
+            pass
+        when = when.replace(tzinfo=None)
+    return when
+
+
+def _titles(items) -> str:
+    names = [str((i or {}).get("title") or "").strip() for i in (items or []) if isinstance(i, dict)]
+    return " ; ".join(n.replace("|", "/") for n in names if n)
+
+
+def _cell(text) -> str:
+    return re.sub(r"\s+", " ", str(text or "")).replace("|", "/").strip()
+
+
+def folder_for(course_title: str, courses: list[dict]) -> str:
+    """The course folder an agenda course name belongs to, as '<year>/<folder>', or '' when none matches."""
+    want = sanitize(course_title).lower()
+    if not course_title:
+        return ""
+    for exact in (True, False):
+        for c in courses:
+            folder = c["folder"].lower()
+            if (folder == want) if exact else (want in folder or folder in want):
+                return f"{c.get('year', OTHER_YEAR)}/{c['folder']}"
+    return ""
+
+
+def write_schedule(events: list[dict], courses: list[dict]) -> tuple[int, int]:
+    classes, other = [], []
+    for e in events:
+        start, end = _local(e.get("startDate")), _local(e.get("endDate"))
+        if not start:
+            continue
+        course = _cell(((e.get("course") or {}).get("title")) if isinstance(e.get("course"), dict) else e.get("course"))
+        row = {"start": start, "end": end, "course": course, "title": _cell(e.get("title")),
+               "room": _cell((e.get("location") or {}).get("title") if isinstance(e.get("location"), dict) else e.get("location")),
+               "staff": _titles(e.get("staff")), "materials": _titles(e.get("materials"))}
+        (classes if course else other).append(row)
+    classes.sort(key=lambda r: r["start"])
+    other.sort(key=lambda r: r["start"])
+    count: dict[str, int] = {}
+    for r in classes:  # the agenda's own session count: the Nth class of a course is its session N
+        count[r["course"]] = count.get(r["course"], 0) + 1
+        r["n"] = count[r["course"]]
+
+    def when(r):
+        return r["start"].strftime("%Y-%m-%d %a"), r["start"].strftime("%H:%M") + (f"-{r['end']:%H:%M}" if r["end"] else "")
+
+    lines = [
+        "# Class schedule",
+        "",
+        f"Built by `pipeline/blackboard.py schedule` from the my.iese.edu agenda on {datetime.now():%Y-%m-%d}: "
+        f"{len(classes)} classes and {len(other)} other events. Times are Madrid time.",
+        "",
+        "## How to use it",
+        "",
+        "\"Prep tomorrow's case\": find tomorrow's date below. The row gives the course, the session number (#) "
+        "and the folder; the session's files are in `<folder>/.../Session N_ <title>/`. `#` counts each course's "
+        "classes in date order, which is how Blackboard numbers its session folders; if a folder's number differs, "
+        "trust the folder and say so.",
+        "",
+        "The agenda changes during term: run `uv run pipeline/blackboard.py schedule` again when this file is more "
+        "than a week old, or when a class is missing.",
+        "",
+        "## Courses",
+        "",
+        "| Agenda course name | Folder under `library/IESE/` | Classes |",
+        "|---|---|---|",
+    ]
+    for name in sorted(count):
+        folder = folder_for(name, courses)
+        lines.append(f"| {name} | {('`' + folder + '/`') if folder else 'not on Blackboard yet'} | {count[name]} |")
+    week = None
+    for r in classes:
+        monday = (r["start"] - timedelta(days=r["start"].weekday())).strftime("%Y-%m-%d")
+        if monday != week:
+            week = monday
+            lines += ["", f"### Week of {monday}", "",
+                      "| Date | Time | Course | # | Session | Room | Faculty | Materials on the agenda |",
+                      "|---|---|---|---|---|---|---|---|"]
+        day, hours = when(r)
+        lines.append(f"| {day} | {hours} | {r['course']} | {r['n']} | {r['title']} | {r['room']} | {r['staff']} | {r['materials']} |")
+    if other:
+        lines += ["", "## Other events", "", "| Date | Time | Event | Room |", "|---|---|---|---|"]
+        for r in other:
+            day, hours = when(r)
+            lines.append(f"| {day} | {hours} | {r['title']} | {r['room']} |")
+    IESE.mkdir(parents=True, exist_ok=True)
+    SCHEDULE.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return len(classes), len(other)
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description="Blackboard downloader for the case pipeline.")
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -875,6 +1048,8 @@ def main(argv: list[str] | None = None) -> int:
     p = sub.add_parser("session")
     p.add_argument("--course", required=True)
     p.add_argument("--session", type=int, required=True)
+    p.add_argument("--no-window", action="store_true")
+    p = sub.add_parser("schedule")
     p.add_argument("--no-window", action="store_true")
     p = sub.add_parser("save-login")
     p.add_argument("--from-env", action="store_true", help="for testing: take IESE_EMAIL and IESE_PASSWORD")
@@ -895,13 +1070,22 @@ def main(argv: list[str] | None = None) -> int:
     try:
         with sync_playwright() as pw:
             context = open_session(pw, allow_window=not args.no_window)
+            agenda = None
+            if args.cmd == "schedule":  # my.iese.edu takes the same Microsoft sign-in as Blackboard
+                agenda, context = fetch_agenda(pw, context, allow_window=not args.no_window)
             # Close the browser once signed in, so a background `rest` never holds the browser profile
             # while `session` needs it; the downloads use the saved cookies instead.
             state = context.storage_state()
             context.close()
             request = pw.request.new_context(storage_state=state)
             try:
-                {"start": cmd_start, "session": cmd_session, "rest": cmd_rest, "list": cmd_list}[args.cmd](Api(request), args)
+                if args.cmd == "schedule":
+                    classes, other = write_schedule(agenda_events(agenda), discover_courses(Api(request)))
+                    say(f"[schedule] {classes} classes and {other} other events written to {SCHEDULE}.")
+                    if not classes:
+                        say("[schedule] The agenda had no classes for this academic year. Open my.iese.edu to check it.")
+                else:
+                    {"start": cmd_start, "session": cmd_session, "rest": cmd_rest, "list": cmd_list}[args.cmd](Api(request), args)
             finally:
                 request.dispose()
     except NotSignedIn as e:
