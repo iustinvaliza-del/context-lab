@@ -6,11 +6,11 @@ Obsidian is a free app for reading and searching a folder of markdown files, cal
 - It sits outside this workshop folder, so every project can read and add to the same notes. That is the difference from a project in Chat or Cowork, which remembers only what is inside it.
 - Obsidian reads the files where they are. Nothing is copied or uploaded.
 - Edits made in Obsidian are ordinary file edits, so the tool reads them in the next session.
-- This workshop folder (AGENTS.md, skills, outputs) is not in the vault; open its files in MarkText.
+- This workshop folder (AGENTS.md, skills, library, Deliverables) is not in the vault; open its files in MarkText.
 
 ## MarkText
 
-MarkText is a free app that opens one markdown file at a time as a formatted page the person can edit like a document. Setup installed it. When they want to read or edit a file (`AGENTS.md`, a skill, the notes in `outputs/`), open it in MarkText: on a Mac `open -a MarkText "<file>"`, on Windows `%LOCALAPPDATA%\Programs\marktext\marktext.exe` with the file's full path. Use Obsidian for the Agent Memory folder and MarkText for single files anywhere else.
+MarkText is a free app that opens one markdown file at a time as a formatted page the person can edit like a document. Setup installed it. When they want to read or edit a file (`AGENTS.md`, a skill, a case note in `library/`, a file in `Deliverables/`), open it in MarkText: on a Mac `open -a MarkText "<file>"`, on Windows `%LOCALAPPDATA%\Programs\marktext\marktext.exe` with the file's full path. Use Obsidian for the Agent Memory folder and MarkText for single files anywhere else.
 
 ## If it is not open, or not installed
 

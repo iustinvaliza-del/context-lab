@@ -1,11 +1,11 @@
 ---
 name: search-my-files
-description: Search the person's own files and notes (IESE courses, sources, outputs, the Agent Memory folder, their lists) before answering a question about them, then answer from what was found and name the file each fact came from. Use when they ask what they wrote, what a case, reading or note says, where something is, or anything about their own material.
+description: Search the person's own files and notes (their library of IESE courses, sources, Deliverables, the Agent Memory folder, their lists) before answering a question about them, then answer from what was found and name the file each fact came from. Use when they ask what they wrote, what a case, reading or note says, where something is, or anything about their own material.
 ---
 
 # Search my files
 
-The database in `database/` keeps a search over the person's files: `IESE/`, `sources/`, `outputs/` and their Agent Memory folder, plus their own lists (see `database/SHAPE.md`). It finds passages that contain the words you search for, ignoring capitals and accents ("economica" finds "económica"). It does not know that two different words mean the same thing: "sales" does not find "revenue". It reads markdown, text, CSV, PDF, Word (.docx) and PowerPoint (.pptx) files.
+The database in `database/` keeps a search over the person's files: `library/`, `sources/`, `Deliverables/` and their Agent Memory folder, plus their own lists (see `database/SHAPE.md`). It finds passages that contain the words you search for, ignoring capitals and accents ("economica" finds "económica"). It does not know that two different words mean the same thing: "sales" does not find "revenue". It reads markdown, text, CSV, PDF, Word (.docx) and PowerPoint (.pptx) files.
 
 Every path below is relative to this project folder. If `uv` is not found, call it by its full path: `~/.local/bin/uv` on a Mac, on Windows `~/.local/bin/uv.exe` in Git Bash or `& "$env:USERPROFILE\.local\bin\uv.exe"` in PowerShell.
 

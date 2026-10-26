@@ -4,7 +4,7 @@ The `prep-case` skill (in `.claude/skills/` and `.agents/skills/`) tells the too
 
 ## What happens when they ask "prep the case for session 5 of Corporate Finance"
 
-1. The first time only: `pipeline/blackboard.py start` opens a Blackboard window, and they sign in there. It finds all their courses, makes a folder per course in `IESE/1st year/` or `IESE/2nd year/`, downloads each syllabus, and writes `IESE/COURSES.md`. The rest of the files download in the background with `blackboard.py rest`.
+1. The first time only: the tool asks which course and session they have next. `pipeline/blackboard.py start --course "<course>"` opens a Blackboard window, and they sign in there. It lists all their courses in `library/IESE/COURSES.md` and sets up the course they have next first: its folder in `library/IESE/1st year/` or `library/IESE/2nd year/` and its syllabus. That session is fetched and prepped straight away, while `blackboard.py rest` downloads every other course in the background.
 2. It offers to save their login. On yes, `blackboard.py save-login` opens a small window, and the email and password go into Windows Credential Manager or the Mac Keychain. You never see the password, and it is never in a file. `blackboard.py forget-login` removes it.
 3. `blackboard.py session --course ... --session 5` downloads that session's files, every time, because professors add files close to class.
 4. `read_case.py` prints the case text and its tables, and saves images of exhibit pages so numbers can be checked against the page.
@@ -13,8 +13,8 @@ The `prep-case` skill (in `.claude/skills/` and `.agents/skills/`) tells the too
 
 ## Questions they may ask
 
-- "Where are my files?" In `IESE/<year>/<course>/`, inside Blackboard's own folders. Session N is the folder that starts "Session N_".
-- "How does it know my year?" From Blackboard: the course name says the class ("MBA 2027" graduates in 2027) and the term says when the course runs; the academic year starts in August. In 2026-27 the class of 2027 is in `2nd year` and the class of 2028 in `1st year`. A course whose year Blackboard does not show goes in `IESE/Other courses/`, and `IESE/COURSES.md` says so.
+- "Where are my files?" In `library/IESE/<year>/<course>/`, inside Blackboard's own folders. Session N is the folder that starts "Session N_".
+- "How does it know my year?" From Blackboard: the course name says the class ("MBA 2027" graduates in 2027), and the course's term or dates, or the day they were enrolled in it, say which academic year it ran in; the academic year starts in August. In 2026-27 the class of 2027 is in its 2nd year: its courses from 2025-26 go in `1st year` and this year's in `2nd year`. The class of 2028 is in `1st year`, and all its courses go there. `library/IESE/COURSES.md` marks the courses running this year as current, and the background download fetches those first. A course with no class in its name goes in `library/IESE/Other courses/`. If a course lands in the wrong year, say so and the tool moves its folder.
 - "Is my password safe?" It is in the computer's own password store, the same place the browser keeps saved passwords. It is not in this folder, not in git and not in the chat.
 - "Why did a window open again?" Blackboard's session expired and no login is saved, or Microsoft asked for a phone prompt.
 - "Why Python and Excel both?" Python computes the numbers; the workbook lets them see and change the model in class. The check proves the two agree.

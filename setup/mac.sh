@@ -65,7 +65,7 @@ prepare_pipeline() {
 prepare_database() {
   local uv="$1" script="$HERE/database/db.py"
   [[ -f "$script" ]] || return 0
-  say "Building the search over your files and notes (IESE, sources, outputs, Agent Memory)."
+  say "Building the search over your files and notes (library, sources, Deliverables, Agent Memory)."
   if "$uv" run "$script" index; then
     say "The search is ready."
   else

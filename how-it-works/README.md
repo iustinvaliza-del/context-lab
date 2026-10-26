@@ -24,7 +24,7 @@ These files are for you, the AI tool, not for the person. The person is new to t
 | Context, `/context`, `/status`, `/clear`, `/compact`, why answers change | `06-context.md` |
 | What each folder is for, the five rounds | `07-this-folder.md` |
 | Obsidian, the vault, MarkText, opening a file | `08-obsidian.md` |
-| The case pipeline, Blackboard, the `IESE/` folder and its year folders, the saved login, the workbook checks | `09-case-pipeline.md` |
+| The case pipeline, Blackboard, the `library/IESE/` folder and its year folders, the saved login, the workbook checks | `09-case-pipeline.md` |
 | The database, searching their files, `database/SHAPE.md`, changing the database's shape or how it looks | `10-database.md` |
 
 ## Do not change these files

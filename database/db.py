@@ -7,7 +7,7 @@
 """Your database: one file on this computer with a search over your files and your own lists.
 
 The database is database/data.db (SQLite, built into Python: no account, no internet). It holds
-a word search over the files in IESE/, sources/, outputs/ and the Agent Memory folder, and the
+a word search over the files in library/, sources/, Deliverables/ and the Agent Memory folder, and the
 lists the person keeps (one general list, `items`, to start). database/SHAPE.md says in plain
 words what it holds; database/schema.sql is the same shape written for the database.
 
@@ -52,7 +52,7 @@ BACKUPS = HERE / "backups"
 
 # Folders inside this project that the search reads; the Agent Memory folder is added when its
 # path is known (setup writes it into extras/AGENTS.starter.md, round 3 into AGENTS.md).
-PROJECT_FOLDERS = ("IESE", "sources", "outputs")
+PROJECT_FOLDERS = ("library", "sources", "Deliverables")
 KINDS = {
     ".md": "markdown",
     ".txt": "text",

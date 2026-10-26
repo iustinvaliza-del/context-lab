@@ -1,6 +1,6 @@
 # Worked examples
 
-One short, invented case per case type, each showing what the prep produces and how the numbers are checked. They are made up for this starter, so they can be shared; real cases stay in `IESE/`, out of git.
+One short, invented case per case type, each showing what the prep produces and how the numbers are checked. They are made up for this starter, so they can be shared; real cases stay in `library/IESE/`, out of git.
 
 | File | Type | What it shows |
 |---|---|---|

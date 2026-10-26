@@ -43,8 +43,8 @@ Then show the plan in plain words: each list, what each entry holds, and how the
 5. Show them the result in the way they chose:
    - in the chat: `uv run database/db.py show <list>`;
    - a note in Obsidian: `uv run database/db.py show <list> --note "<Agent Memory folder>/Lists/<list>.md"`, and run it again after each change to the list;
-   - a spreadsheet: `uv run database/db.py show <list> --csv outputs/<list>.csv`;
-   - a page: a simple HTML page in `outputs/` made from that CSV.
+   - a spreadsheet: `uv run database/db.py show <list> --csv Deliverables/<YYYY-MM-DD>/<list>/<list>.csv`;
+   - a page: a simple HTML page next to that CSV, in the same `Deliverables/<YYYY-MM-DD>/<list>/` folder.
 6. Tell them in one or two sentences what changed and that they can change it again any time.
 
 Add entries with `uv run database/db.py add <list> column="value" ...`, for example `add people name="Ana García" company=CaixaBank`.

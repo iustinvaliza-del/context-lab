@@ -11,7 +11,7 @@ This folder has a small database in `database/`. It does two things: it lets the
 
 ## How the search works
 
-1. The search reads the files in `IESE/`, `sources/` and `outputs/`, and their Agent Memory folder: markdown, text, CSV, PDF, Word and PowerPoint files.
+1. The search reads the files in `library/`, `sources/` and `Deliverables/`, and their Agent Memory folder: markdown, text, CSV, PDF, Word and PowerPoint files.
 2. It cuts each file into short passages of a few paragraphs and keeps a list of which words are in which passage. That list is what makes a search take a fraction of a second.
 3. When they ask about their own material, the tool searches with a few key words, reads the best passages and answers, naming the file (and the page) each fact came from. The search-my-files skill has the steps.
 4. It ignores capitals and accents: "economica" finds "económica".
@@ -22,7 +22,7 @@ This folder has a small database in `database/`. It does two things: it lets the
 
 - The starting shape is one general list called `items` (anything: ideas, contacts, readings, deadlines) plus the search part. It is only a start.
 - It can hold any lists they want, for example people they meet, deals, cases or readings, each with the details they choose.
-- It can be shown any way they like: a list in the chat, a note in their Agent Memory folder that they read in Obsidian, a spreadsheet that opens in Excel, or a simple page in `outputs/`.
+- It can be shown any way they like: a list in the chat, a note in their Agent Memory folder that they read in Obsidian, a spreadsheet that opens in Excel, or a simple page in `Deliverables/<date>/`.
 - To change it, they ask in their own words, for example "keep a list of the people I meet: name, company, where we met". The shape-database skill has the steps: the tool asks up to five short questions, shows the plan, changes nothing until they say yes, then updates `SHAPE.md`.
 - The tool offers this once and may remind them once later. If they never want it, nothing changes.
 

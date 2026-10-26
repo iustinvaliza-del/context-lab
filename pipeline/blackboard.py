@@ -9,7 +9,7 @@
 
 Signs in to IESE Blackboard (vc.iese.edu) in a browser that is already on the laptop (Edge or
 Chrome), finds every course the person is enrolled in, builds a folder per course under
-IESE/<year>/ in this project ("1st year", "2nd year"), and downloads the course materials
+library/IESE/<year>/ in this project ("1st year", "2nd year"), and downloads the course materials
 through Blackboard's REST API.
 
     uv run pipeline/blackboard.py start            first run: sign in, build every course folder,
@@ -24,15 +24,19 @@ through Blackboard's REST API.
     uv run pipeline/blackboard.py forget-login     remove them again
     uv run pipeline/blackboard.py check            install what this script needs and find a browser
 
-Files land in IESE/<year>/<course>/<Blackboard folders>/<file>, for example
-IESE/1st year/Corporate Finance/Materials/Session 5_ Pacific Grove/Pacific_Grove.pdf. Blackboard's
+Files land in library/IESE/<year>/<course>/<Blackboard folders>/<file>, for example
+library/IESE/1st year/Corporate Finance/Materials/Session 5_ Pacific Grove/Pacific_Grove.pdf. Blackboard's
 own folder names are kept, so session N is always the folder that starts "Session N_".
 
 The year comes from Blackboard: a term name that says "Year 1" or "Year 2", or else the class in
 the course name ("MBA 2027 - ...", the year the class graduates) set against the academic year the
-course runs in (from the term's name or start date, or else today's date; the academic year starts
-in August). The class of 2027 is in its 2nd year in 2026-27. A course whose year cannot be told
-goes in IESE/Other courses/. CASE_COURSES_DIR=<folder> puts the IESE folder somewhere else.
+course ran in. That academic year comes from the first of: the term's name or dates, the course's
+own dates, the day the person was enrolled, the day the course was made (the academic year starts
+in August). The class of 2027 is in its 2nd year in 2026-27, so a 2nd-year student's courses from
+last year go in 1st year/, and a 1st-year student's courses are all in 1st year/. Courses running
+this academic year are marked current in COURSES.md, and `rest` downloads them first. A course
+whose year cannot be told goes in library/IESE/Other courses/. CASE_COURSES_DIR=<folder> puts the
+IESE folder somewhere else.
 
 Signing in: without a saved login, a browser window opens and the person signs in there
 (email, password and any phone prompt). With a saved login the run signs in by itself and
@@ -59,7 +63,7 @@ from urllib.parse import urlparse
 HERE = Path(__file__).resolve().parent
 PROJECT = HERE.parent
 # The IESE folder: one folder per year inside, one folder per course inside each year.
-IESE = Path(os.environ.get("CASE_COURSES_DIR") or PROJECT / "IESE")
+IESE = Path(os.environ.get("CASE_COURSES_DIR") or PROJECT / "library" / "IESE")
 OTHER_YEAR = "Other courses"
 STATE = HERE / ".state"
 
@@ -412,6 +416,7 @@ class Api:
         try:
             if not resp.ok:
                 raise ApiError(resp.status, path)
+            dest = long_path(dest)
             dest.parent.mkdir(parents=True, exist_ok=True)
             tmp = dest.with_name(dest.name + ".part")
             tmp.write_bytes(resp.body())
@@ -432,7 +437,37 @@ def sanitize(name: str | None) -> str:
     # Windows cannot open a folder whose name ends in a dot or a space, so those are cut.
     name = re.sub(r'[<>:"/\\|?*]', "_", name or "Untitled")
     name = re.sub(r"\s+", " ", name).strip()
-    return re.sub(r"[. ]+$", "", name)[:100] or "Untitled"
+    return re.sub(r"[. ]+$", "", name[:100].rstrip()) or "Untitled"
+
+
+def make_dir(path: Path) -> None:
+    """Make a course folder; one the disk refuses is reported and skipped, never the end of the run."""
+    try:
+        long_path(path).mkdir(parents=True, exist_ok=True)
+    except OSError as e:
+        say(f"  ! could not make the folder {path.name} ({e.strerror or e})")
+
+
+def fit_name(folder: Path, name: str, limit: int = 240) -> str:
+    """Shorten a file name, keeping its extension, so the whole path stays under Windows' 260 characters
+    (with room for ".part"). Excel and File Explorer cannot open longer paths even when Python can write them."""
+    room = limit - len(str(folder.resolve())) - 1
+    if len(name) <= room:
+        return name
+    stem, dot, ext = name.rpartition(".")
+    if not dot or len(ext) > 8:
+        stem, ext = name, ""
+    keep = max(20, room - (len(ext) + 1 if ext else 0))
+    return stem[:keep].rstrip(" .") + ("." + ext if ext else "")
+
+
+def long_path(path: Path) -> Path:
+    """Windows refuses paths over 260 characters unless they start with \\\\?\\; long session titles reach that."""
+    if os.name == "nt":
+        full = str(path.resolve())
+        if len(full) > 240 and not full.startswith("\\\\?\\"):
+            return Path("\\\\?\\" + full)
+    return path
 
 
 def course_folder_name(blackboard_name: str) -> str:
@@ -445,22 +480,52 @@ def course_folder_name(blackboard_name: str) -> str:
 YEAR_NAMES = {1: "1st year", 2: "2nd year"}
 
 
-def _academic_year_end(term: str, term_start: str, today: datetime | None = None) -> int:
-    """The calendar year an academic year ends in: 2027 for 2026-27. It starts in August."""
-    m = re.search(r"\b(20\d\d)\s*[-/]\s*(?:20)?(\d\d)\b", term)
+def _academic_year_of(date: str, first_month: int = 8) -> int | None:
+    """The calendar year the academic year holding this Blackboard date ends in: 2027 for 2026-27.
+    A course runs from August; a date the course was made or someone was enrolled counts from May,
+    because both happen in the months before the term starts."""
+    m = re.match(r"(20\d\d)-(\d\d)", date or "")  # Blackboard dates look like 2026-08-24T22:00:00.000Z
+    if not m:
+        return None
+    year, month = int(m.group(1)), int(m.group(2))
+    return year + 1 if month >= first_month else year
+
+
+def _within_a_year(start: str, end: str) -> bool:
+    """A date range that fits one academic year. A term that covers the whole programme says nothing."""
+    try:
+        a = datetime.fromisoformat(start.replace("Z", "+00:00"))
+        b = datetime.fromisoformat(end.replace("Z", "+00:00"))
+    except (AttributeError, ValueError):
+        return bool(start) and not end
+    return (b - a).days <= 400
+
+
+def academic_year_end(dates: dict, today: datetime | None = None) -> tuple[int, bool]:
+    """(the academic year the course ran in, whether that came from Blackboard rather than today's date).
+    dates holds what Blackboard says: term, term_start, term_end, course_start, course_end, enrolled, created."""
+    m = re.search(r"\b(20\d\d)\s*[-/]\s*(?:20)?(\d\d)\b", dates.get("term") or "")
     if m and (int(m.group(2)) - int(m.group(1)[2:])) % 100 == 1:
-        return int(m.group(1)) + 1
-    m = re.match(r"(20\d\d)-(\d\d)", term_start)  # Blackboard dates look like 2026-08-24T22:00:00.000Z
-    if m:
-        year, month = int(m.group(1)), int(m.group(2))
-    else:
-        when = today or datetime.now()
-        year, month = when.year, when.month
-    return year + 1 if month >= 8 else year
+        return int(m.group(1)) + 1, True
+    for start, end in (("term_start", "term_end"), ("course_start", "course_end")):
+        if dates.get(start) and _within_a_year(dates[start], dates.get(end) or ""):
+            return _academic_year_of(dates[start]), True
+    for key in ("enrolled", "created"):
+        found = _academic_year_of(dates.get(key) or "", first_month=5)
+        if found:
+            return found, True
+    return current_academic_year(today), False
 
 
-def course_year(name: str, term: str = "", term_start: str = "", today: datetime | None = None) -> str:
+def current_academic_year(today: datetime | None = None) -> int:
+    when = today or datetime.now()
+    return when.year + 1 if when.month >= 8 else when.year
+
+
+def course_year(name: str, dates: dict | None = None, today: datetime | None = None) -> str:
     """'1st year', '2nd year' or 'Other courses', from what Blackboard says about the course."""
+    dates = dates or {}
+    term = dates.get("term") or ""
     m = re.search(r"\b(?:year\s*([12])|([12])(?:st|nd)\s+year|(first|second)\s+year)\b", term, re.I)
     if m:
         word = (m.group(3) or "").lower()
@@ -468,9 +533,32 @@ def course_year(name: str, term: str = "", term_start: str = "", today: datetime
     m = re.search(r"\bMBA\s*(20\d\d)\b", name, re.I) or re.search(r"\bMBA\s*(20\d\d)\b", term, re.I)
     if not m:
         return OTHER_YEAR
+    graduates = int(m.group(1))
+    now = 2 - (graduates - current_academic_year(today))  # the year the person is in today
+    ran, _ = academic_year_end(dates, today)
     # The class graduates in the summer its academic year ends: then it is in its 2nd year.
-    year = 2 - (int(m.group(1)) - _academic_year_end(term, term_start, today))
+    year = 2 - (graduates - ran)
+    if now == 1 and year in (0, 2):  # a 1st-year student has no 2nd-year courses yet; a course made early still counts
+        year = 1
     return YEAR_NAMES.get(year, OTHER_YEAR)
+
+
+def is_current(course: dict, today: datetime | None = None) -> bool:
+    """Runs this academic year (and has not ended, when Blackboard gives an end date)."""
+    dates = course.get("dates") or {}
+    ran, known = academic_year_end(dates, today)
+    m = re.search(r"\bMBA\s*(20\d\d)\b", course.get("name") or "", re.I)
+    first_year_now = bool(m) and int(m.group(1)) - current_academic_year(today) == 1
+    if not known:  # no dates: current when it sits in the year the person is in now
+        if m:
+            return course.get("year") == YEAR_NAMES.get(2 - (int(m.group(1)) - current_academic_year(today)))
+        return course.get("year") != OTHER_YEAR
+    if ran != current_academic_year(today) and not first_year_now:  # a 1st-year student has no earlier year
+        return False
+    for start, end in (("course_start", "course_end"), ("term_start", "term_end")):
+        if dates.get(start) and dates.get(end) and _within_a_year(dates[start], dates[end]):
+            return dates[end][:10] >= (today or datetime.now()).strftime("%Y-%m-%d")
+    return True
 
 
 def course_dir(course: dict) -> Path:
@@ -504,7 +592,7 @@ def discover_courses(api: Api) -> list[dict]:
     """Every enrolled course with its year and folder name, kept stable in .state/courses.json."""
     known = {c["id"]: c for c in load_json(COURSE_LIST, [])}
     for c in known.values():  # saved by an earlier version, before the year folders
-        c.setdefault("year", course_year(c.get("name", ""), c.get("term", "")))
+        c.setdefault("year", course_year(c.get("name", ""), c.get("dates") or {"term": c.get("term", "")}))
     me = api.get("/users/me")
     enrolments = api.get_all(f"/users/{me['id']}/courses")
     courses, used = [], {(c["year"], c["folder"]) for c in known.values()}
@@ -530,13 +618,17 @@ def discover_courses(api: Api) -> list[dict]:
                     terms[data["termId"]] = {}
             term = terms[data["termId"]]
         term_name = term.get("name") or ""
-        term_start = ((term.get("availability") or {}).get("duration") or {}).get("start") or ""
-        year = course_year(name, term_name, term_start)
+        term_span = (term.get("availability") or {}).get("duration") or {}
+        course_span = (data.get("availability") or {}).get("duration") or {}
+        dates = {"term": term_name, "term_start": term_span.get("start") or "", "term_end": term_span.get("end") or "",
+                 "course_start": course_span.get("start") or "", "course_end": course_span.get("end") or "",
+                 "enrolled": e.get("created") or "", "created": data.get("created") or ""}
+        year = course_year(name, dates)
         folder = course_folder_name(name)
         if (year, folder) in used:  # two courses with the same name: add Blackboard's course code
             folder = sanitize(f"{folder} ({data.get('courseId') or cid})")
         used.add((year, folder))
-        course = {"id": cid, "name": name, "year": year, "folder": folder, "term": term_name}
+        course = {"id": cid, "name": name, "year": year, "folder": folder, "term": term_name, "dates": dates}
         known[cid] = course
         courses.append(course)
     save_json(COURSE_LIST, list(known.values()))
@@ -581,10 +673,11 @@ class Downloader:
             return
         for att in attachments:
             key = f"{course['id']}/{item['id']}/{att['id']}"
-            name = sanitize(att.get("fileName") or f"{item.get('title') or 'file'}.bin")
-            dest = course_dir(course) / Path(*parts) / name
+            folder = course_dir(course) / Path(*parts)
+            name = fit_name(folder, sanitize(att.get("fileName") or f"{item.get('title') or 'file'}.bin"))
+            dest = folder / name
             shown = " / ".join((course_label(course),) + parts + (name,))
-            if dest.exists():  # a file deleted or moved since is fetched again
+            if long_path(dest).exists():  # a file deleted or moved since is fetched again
                 self.manifest["files"].setdefault(key, {"path": str(dest)})
                 self.skipped += 1
                 if not quiet:
@@ -598,6 +691,9 @@ class Downloader:
             except ApiError as e:
                 self.failed += 1
                 say(f"  ! {shown} (HTTP {e.status})")
+            except OSError as e:  # a name the disk refuses: skip this file, keep going
+                self.failed += 1
+                say(f"  ! {shown} (could not save: {e.strerror or e})")
             save_json(MANIFEST, self.manifest)
             if pause:
                 time.sleep(pause)
@@ -614,7 +710,7 @@ def matching(courses: list[dict], text: str) -> list[dict]:
             or text in course_label(c).lower()]
 
 
-def write_index(courses: list[dict], pending: dict[str, int]) -> None:
+def write_index(courses: list[dict], pending: dict[str, int | str]) -> None:
     lines = [
         "# My courses",
         "",
@@ -622,18 +718,22 @@ def write_index(courses: list[dict], pending: dict[str, int]) -> None:
         "folder per course; inside each course, Blackboard's own folders, so session N is the folder that starts "
         "\"Session N_\". Each course's `Syllabus.md` is written the first time a case from that course is prepped.",
         "",
-        "The year comes from the course's name on Blackboard (\"MBA 2027\" is the class that graduates in 2027) and its term.",
+        "The year comes from the course's name on Blackboard (\"MBA 2027\" is the class that graduates in 2027) and from when the "
+        "course ran: its term or dates, or the day you were enrolled. A 2nd-year student's courses from last year are in `1st year`.",
     ]
     if any(c.get("year", OTHER_YEAR) == OTHER_YEAR for c in courses):
         lines.append(f"For the courses in `{OTHER_YEAR}/`, Blackboard did not say which year they belong to.")
     lines += [
         "",
-        "| Year folder | Course folder | Blackboard name | Term | Files not downloaded yet |",
-        "|---|---|---|---|---|",
+        "Current means the course runs this academic year. The rest are courses from an earlier year.",
+        "",
+        "| Year folder | Course folder | Current | Blackboard name | Term | Files not downloaded yet |",
+        "|---|---|---|---|---|---|",
     ]
     order = {name: i for i, name in enumerate([*YEAR_NAMES.values(), OTHER_YEAR])}
-    for c in sorted(courses, key=lambda c: (order.get(c.get("year", OTHER_YEAR), 9), c.get("term") or "", c["folder"])):
-        lines.append(f"| {c.get('year', OTHER_YEAR)} | {c['folder']} | {c['name']} | {c.get('term') or ''} | {pending.get(c['id'], 0)} |")
+    for c in sorted(courses, key=lambda c: (order.get(c.get("year", OTHER_YEAR), 9), not is_current(c), c["folder"])):
+        now = "yes" if is_current(c) else ""
+        lines.append(f"| {c.get('year', OTHER_YEAR)} | {c['folder']} | {now} | {c['name']} | {c.get('term') or ''} | {pending.get(c['id'], 0)} |")
     lines += ["", f"Updated {datetime.now():%Y-%m-%d %H:%M}. Run `uv run pipeline/blackboard.py rest` to download the rest."]
     IESE.mkdir(parents=True, exist_ok=True)
     (IESE / "COURSES.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
@@ -642,10 +742,14 @@ def write_index(courses: list[dict], pending: dict[str, int]) -> None:
 # ─── Commands ────────────────────────────────────────────────────────────────
 
 def cmd_start(api: Api, args) -> None:
-    courses = discover_courses(api)
-    if args.course:
-        courses = matching(courses, args.course)
-    say(f"[blackboard] {len(courses)} courses. Building the folders and downloading each syllabus.")
+    every = discover_courses(api)
+    courses = matching(every, args.course) if args.course else every
+    if not courses:
+        # COURSES.md is not written yet: its absence is what tells the prep-case skill the first run is unfinished
+        names = "\n".join(f"  - {course_label(c)}" for c in every)
+        raise SystemExit(f'[blackboard] No course matches "{args.course}". The {len(every)} courses on Blackboard:\n'
+                         f'{names}\nRun start again with one of those names.')
+    say(f"[blackboard] {len(courses)} of {len(every)} courses. Building the folders and downloading each syllabus.")
     dl = Downloader(api)
     pending: dict[str, int] = {}
     for course in courses:
@@ -654,7 +758,7 @@ def cmd_start(api: Api, args) -> None:
         say(f"\n[course] {course_label(course)}")
         for entry in walk(api, course["id"]):
             if entry[0] == "folder":
-                (root / Path(*entry[1])).mkdir(parents=True, exist_ok=True)
+                make_dir(root / Path(*entry[1]))
                 continue
             _, parts, item = entry
             title = item.get("title") or ""
@@ -663,9 +767,13 @@ def cmd_start(api: Api, args) -> None:
             else:
                 pending[course["id"]] = pending.get(course["id"], 0) + 1
     dl.finish()
-    write_index(courses if not args.course else discover_courses(api), pending)
+    waiting = sum(pending.values())
+    # Courses left out by --course have no folder yet: `rest` builds them and downloads all their files
+    later = {c["id"]: "all" for c in every if c not in courses}
+    write_index(every, {**pending, **later})
     say(f"[blackboard] Course folders are in {IESE}, one folder per year. The list is {IESE / 'COURSES.md'}.")
-    say(f"[blackboard] {sum(pending.values())} more files wait for `rest`.")
+    others = f", and all the files of {len(later)} other courses" if later else ""
+    say(f"[blackboard] {waiting} more files{others} wait for `rest`.")
     if not load_login():
         say("[blackboard] No saved login yet. Ask the person whether to save their IESE email and password for "
             "next time; if yes, run: uv run pipeline/blackboard.py save-login")
@@ -713,12 +821,13 @@ def cmd_rest(api: Api, args) -> None:
     courses = discover_courses(api)
     if args.course:
         courses = matching(courses, args.course)
+    courses.sort(key=lambda c: not is_current(c))  # this year's courses first, then earlier years
     dl = Downloader(api)
     for course in courses:
         say(f"\n[course] {course_label(course)}")
         for entry in walk(api, course["id"]):
             if entry[0] == "folder":
-                (course_dir(course) / Path(*entry[1])).mkdir(parents=True, exist_ok=True)
+                make_dir(course_dir(course) / Path(*entry[1]))
             else:
                 dl.file_item(course, entry[1], entry[2], pause=PAUSE, quiet=True)
     dl.finish()
@@ -727,7 +836,8 @@ def cmd_rest(api: Api, args) -> None:
 
 def cmd_list(api: Api, args) -> None:
     for c in discover_courses(api):
-        say(f"{course_label(c)}  <-  {c['name']}" + (f"  ({c['term']})" if c.get("term") else ""))
+        say(f"{course_label(c)}{'  (current)' if is_current(c) else ''}  <-  {c['name']}"
+            + (f"  ({c['term']})" if c.get("term") else ""))
 
 
 def cmd_save_login(args) -> int:

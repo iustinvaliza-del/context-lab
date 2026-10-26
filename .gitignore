@@ -2,8 +2,12 @@
 sources/*
 !sources/.gitkeep
 
+# What the tool makes for you stays on your computer; only the folder's README is shared
+Deliverables/*
+!Deliverables/README.md
+
 # Your IESE courses from Blackboard (copyrighted cases, your notes) and the pipeline's list of downloaded files
-IESE/
+library/IESE/
 pipeline/.state/
 __pycache__/
 

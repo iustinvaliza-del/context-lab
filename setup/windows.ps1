@@ -163,7 +163,7 @@ function Prepare-Pipeline([string]$Uv) {
 function Prepare-Database([string]$Uv) {
   $dbScript = Join-Path $Here 'database\db.py'
   if (-not (Test-Path -LiteralPath $dbScript)) { return }
-  Say 'Building the search over your files and notes (IESE, sources, outputs, Agent Memory).'
+  Say 'Building the search over your files and notes (library, sources, Deliverables, Agent Memory).'
   try {
     & $Uv run $dbScript index | Out-Host
     if ($LASTEXITCODE -eq 0) { Say 'The search is ready.' }

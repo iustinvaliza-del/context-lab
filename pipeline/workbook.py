@@ -253,7 +253,8 @@ class CaseWorkbook:
         for col in "BCDE":
             style(ws[f"{col}2"], "title")
         ws["B2"] = "Checks"
-        ws["B3"] = "Every row must read OK before any number is cited. Tolerance 0.5 in the last unit."
+        ws["B3"] = ("Every row must read OK before any number is cited. Tolerance: two decimals for numbers from 1 up, "
+                    "0.0005 for rates below 1, never more than 0.5 (the same rule as check_workbook.py).")
         style(ws["B3"], "note")
         for col, h in zip("BCDE", ("Check", "Expected", "Actual", "Status")):
             ws[f"{col}4"] = h; style(ws[f"{col}4"], "colhead")
@@ -268,7 +269,9 @@ class CaseWorkbook:
         ws[f"C{r}"] = expected; ws[f"D{r}"] = actual
         for col in "CD":
             ws[f"{col}{r}"].number_format = fmt; ws[f"{col}{r}"].font = _font()
-        ws[f"E{r}"] = f'=IF(ABS(C{r}-D{r})<=0.5,"OK","FAIL")'
+        # The same tolerance as check_workbook.py, so Excel and Python agree on OK
+        tol = f"MIN(0.5,MAX(0.0001*ABS(C{r}),IF(ABS(C{r})>=1,0.005,0.0005)))"
+        ws[f"E{r}"] = f'=IF(ABS(C{r}-D{r})<={tol},"OK","FAIL")'
         ws[f"E{r}"].font = _font(bold=True)
         self._check_row += 1
 

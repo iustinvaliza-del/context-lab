@@ -12,10 +12,10 @@
 ## Constraints
 - <deadlines, things I never do>
 
-## Files and outputs
-- My IESE courses are in IESE/, one folder per year (1st year, 2nd year) and one per course inside it. The prep-case skill fetches and preps a session.
+## Files and where things go
+- My IESE courses are in library/IESE/, one folder per year (1st year, 2nd year) and one per course inside it. The prep-case skill fetches and preps a session.
 - For any other task, read its files in sources/ first.
-- Save work I ask to keep to outputs/.
+- Anything you make for me to look at or keep goes in Deliverables/<YYYY-MM-DD>/<name>/, dated today.
 
 ## Memory (keep this section as it is)
 - My memory is my Agent Memory folder: <full path of my Agent Memory folder>. It sits outside this project, so every project can read it.

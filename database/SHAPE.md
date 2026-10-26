@@ -21,14 +21,14 @@ Anything you want to keep track of, until you want a list of its own for it.
 
 ## The search part
 
-The search reads your files in `IESE/`, `sources/`, `outputs/` and your Agent Memory folder, and keeps what it read in these three lists. `uv run database/db.py index` fills them; nobody changes them by hand. If they are ever lost, `index` builds them again from your files.
+The search reads your files in `library/`, `sources/`, `Deliverables/` and your Agent Memory folder, and keeps what it read in these three lists. `uv run database/db.py index` fills them; nobody changes them by hand. If they are ever lost, `index` builds them again from your files.
 
 ### `documents`: one row per file the search has read
 - `id`: a number for each file
 - `path`: where the file is
 - `title`: its first heading, or its name
 - `kind`: markdown, text, table, pdf, word or slides
-- `folder`: IESE, sources, outputs, Agent Memory, or another folder's name
+- `folder`: library, sources, Deliverables, Agent Memory, or another folder's name
 - `modified` and `size`: when the file last changed and how big it is, to notice changes quickly
 - `fingerprint`: a code computed from the file's contents, to tell whether it really changed
 - `note`: why a file gave no text, when it gave none (for example a scanned PDF)
@@ -46,7 +46,7 @@ The search reads your files in `IESE/`, `sources/`, `outputs/` and your Agent Me
 
 ## How you see it
 
-Not chosen yet. For now the tool shows a list in the chat when you ask. It can also save it as a note in your Agent Memory folder (so you read it in Obsidian), as a spreadsheet file that opens in Excel, or as a simple page in `outputs/`.
+Not chosen yet. For now the tool shows a list in the chat when you ask. It can also save it as a note in your Agent Memory folder (so you read it in Obsidian), as a spreadsheet file that opens in Excel, or as a simple page in `Deliverables/<date>/`.
 
 ## Asked so far
 

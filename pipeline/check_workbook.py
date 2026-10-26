@@ -28,7 +28,7 @@ os.environ.setdefault("TQDM_DISABLE", "1")  # formulas prints a progress bar oth
 def tolerance(expected: float) -> float:
     """How far Actual may be from Expected and still read OK.
 
-    0.5 for large numbers, as on the Checks sheet itself; rounding to two decimals for numbers
+    0.5 for large numbers, the same rule as the Checks sheet's own Status column; rounding to two decimals for numbers
     from 1 up (2.6 cannot pass as 2.2); 0.0005 for rates and shares below 1, so an IRR of 15.2%
     cannot pass as 15.7%.
     """

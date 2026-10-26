@@ -11,7 +11,7 @@ The tools are in `pipeline/` and run with `uv run`, which installs what each scr
 
 | Tool | What it does |
 |---|---|
-| `pipeline/blackboard.py` | Signs in to Blackboard, builds `IESE/`, downloads files |
+| `pipeline/blackboard.py` | Signs in to Blackboard, builds `library/IESE/`, downloads files |
 | `pipeline/read_case.py` | Prints a case PDF's text and tables, and saves page images of exhibits |
 | `pipeline/workbook.py` | Builds the Excel workbook: Inputs, exhibit sheets, Checks |
 | `pipeline/check_workbook.py` | Calculates the workbook in Python and prints the Checks rows |
@@ -20,12 +20,22 @@ The tools are in `pipeline/` and run with `uv run`, which installs what each scr
 
 ## Before anything: the first run
 
-If `IESE/COURSES.md` does not exist, the person's courses are not set up yet. Do this first, then carry on with the prep:
+If `library/IESE/COURSES.md` does not exist, the person's courses are not set up yet. The first run sets up the course they have next first, preps it, and downloads every other course in the background:
 
-1. Tell them: "A Blackboard window will open. Sign in with your IESE email and password, and approve the phone prompt if Microsoft asks."
-2. Run `uv run pipeline/blackboard.py start` with the longest timeout the tool allows (10 minutes in Claude Code). It waits for the sign-in, finds every course they are enrolled in, makes a folder for each year under `IESE/` (`1st year`, `2nd year`, and `Other courses` when Blackboard does not say the year) with one folder per course inside it, copies Blackboard's folders inside each course, downloads each course's syllabus or outline, and writes `IESE/COURSES.md`.
-3. Start `uv run pipeline/blackboard.py rest` in the background (the rest of the files, one at a time). Do not wait for it: the prep needs only the syllabus and the session's own files.
-4. If the output says there is no saved login, ask once: "Save your IESE email and password for next time, so the pipeline signs in by itself? They go into this computer's password store, not into a file." On yes, run `uv run pipeline/blackboard.py save-login`: a small window asks for them. Never ask them to type the password in the chat, and never read it back. On no, carry on: each run that finds the Blackboard session expired opens the sign-in window again.
+1. **Which class is next.** If they have not named both the course and the session number of their next class, ask one question and wait: "Which course do you have next, and which session number is it?" Do not guess it from the date: the syllabus is not on this computer yet.
+2. Tell them: "A Blackboard window may open. If it does, sign in with your IESE email and password, and approve the phone prompt if Microsoft asks." It opens only when this computer is not signed in to Blackboard yet. Read the run's whole output, not only its last lines.
+3. Run `uv run pipeline/blackboard.py start --course "<course>"` with the longest timeout the tool allows (10 minutes in Claude Code). It waits for the sign-in, finds every course they are enrolled in and lists them all in `library/IESE/COURSES.md` (by year, with this year's courses marked current; a 2nd-year student's courses from last year go in `1st year`), then builds that one course's folder: under its year (`library/IESE/1st year/`, `2nd year/`, or `Other courses/` when Blackboard does not say the year), with Blackboard's own folders inside it and the course's syllabus or outline. If it says no course matches, it prints the names of all their courses: ask which one they meant, and run it again with that name.
+4. Fetch that session's files right away: step 2 below.
+5. Then start `uv run pipeline/blackboard.py rest` in the background. It builds the folders of every other course and downloads all their files, one at a time, this year's courses first. Do not wait for it: a later session fetch can run while it works. Tell them their other courses keep downloading while they work.
+6. If the output of step 3 says there is no saved login, ask once: "Save your IESE email and password for next time, so the pipeline signs in by itself? They go into this computer's password store, not into a file." On yes, run `uv run pipeline/blackboard.py save-login`: a small window asks for them. Never ask them to type the password in the chat, and never read it back. On no, carry on: each run that finds the Blackboard session expired opens the sign-in window again.
+7. Carry on with the prep of that session from step 3 below.
+
+If they say later that a course is in the wrong year folder, move its folder and change that course's `"year"` in `pipeline/.state/courses.json`, so later runs use the new place.
+
+## Where things go
+
+- `library/IESE/<year>/<Course>/` is the case library: Blackboard's files, the course's `Syllabus.md`, and the notes and workbook you write, next to the case in the session's folder. Notes stay with their case.
+- `Deliverables/<YYYY-MM-DD>/<name>/` is for anything made for them to look at or keep that is not a case note: a copy they ask for, a summary across courses, a page, an export. `Deliverables/README.md` has the layout.
 
 ## Model and budget
 
@@ -35,10 +45,10 @@ If `IESE/COURSES.md` does not exist, the person's courses are not set up yet. Do
 
 ## Steps
 
-1. **Target.** Find the course and the session number from what they said, `IESE/COURSES.md` and the course's `Syllabus.md`. If the course has no `Syllabus.md` yet, read its syllabus or outline file with `read_case.py` and write `IESE/<year>/<Course>/Syllabus.md`: one row per session with number, date, title, case or reading, and the prep questions word for word. For "today" or "tomorrow", run `date` and match the dates in `Syllabus.md`. Unsure which session: ask; never guess from the order of the syllabus.
+1. **Target.** Find the course and the session number from what they said, `library/IESE/COURSES.md` and the course's `Syllabus.md`. If the course has no `Syllabus.md` yet, read its syllabus or outline file with `read_case.py` and write `library/IESE/<year>/<Course>/Syllabus.md`: one row per session with number, date, title, case or reading, and the prep questions word for word. For "today" or "tomorrow", run `date` and match the dates in `Syllabus.md`. Unsure which session: ask; never guess from the order of the syllabus.
 2. **Fetch the session.** Always, even when the folder already has files, because professors add slides and readings close to class: `uv run pipeline/blackboard.py session --course "<course>" --session N` (10-minute timeout; a sign-in window may open). Lines with `+` are new files, `=` were already there. Name the new ones in your reply. If the run stops because the sign-in was not completed, prep from the files already on disk and say "Blackboard not checked" at the top of your reply. "No files in a Session N_ folder" can mean the syllabus and Blackboard number sessions differently: check `--session N+1` or `N-1` once and say what you found.
 3. **Read.** `uv run pipeline/read_case.py "<case.pdf>" ["<reading.pdf>"] --out "<session folder>/_pages"`. It prints each page's text, each table as markdown, and saves images of the pages with tables or little text. Before using a number from an exhibit, open that page's image and check the number against it; when an exhibit got no image (its table was not found), check it against the page text and say so in the notes. Spreadsheets that come with the case: read them with Python (openpyxl or pandas).
-4. **Pre-notes first.** Name every file after the case in capitals with underscores, for example `BRISA_BIKES`: that is `<CASE>` below. Write `<CASE>_PRE_NOTES.md` in the session folder (outline below) and show it before asking them anything about the case or writing the full notes. They may not have read the case: a question about an assumption means nothing without it.
+4. **Pre-notes first.** Name every file after the case in capitals with underscores, for example `BRISA_BIKES`: that is `<CASE>` below. Write `<CASE>_PRE_NOTES.md` in the session folder (outline below), show it, and stop: wait for their reply before the workbook or the full notes. They may not have read the case: a question about an assumption means nothing without it.
 5. **Classify** by the questions, not by the course name:
    - **Discussion**: judgement, people, strategy, ethics. No number is asked for.
    - **Quantitative**: the questions ask for numbers that are not an optimisation: valuation, NPV, payback, financial statements, costing, break-even, cash needs, a decision tree, capacity or a bottleneck.
@@ -58,7 +68,7 @@ If `IESE/COURSES.md` does not exist, the person's courses are not set up yet. Do
    - c. The workbook lays the model out with formulas (SUMPRODUCT rows for the objective and each limit) at the Python optimum, with Checks rows for the objective and each limit's usage; `check_workbook.py` then proves the layout matches the Python solve. On Windows with Excel installed, `pipeline/solver_runner.py` can also set up and run Excel's own Solver in the file, so they can re-solve it in class; on a Mac, say that Solver setup is left to them.
    Example: `pipeline/examples/optimisation.md`.
 9. **Deliver.** Point to the pre-notes, the notes and the workbook with their full paths. In a few lines: what the session teaches, the key facts or answers, every assumption you made (so they can correct it), and the positions they should bring. Never fill their positions in.
-10. **Log.** Add a row to `IESE/PREP_LOG.md` (make it with a header if missing): date, course, session, case, type, what was delivered, and whether Blackboard was checked.
+10. **Log.** Add a row to `library/IESE/PREP_LOG.md` (make it with a header if missing): date, course, session, case, type, what was delivered, whether Blackboard was checked, and anything that was missing (no syllabus, a base case not on Blackboard).
 
 ## Pre-notes outline: `<CASE>_PRE_NOTES.md`
 
@@ -92,11 +102,12 @@ A session with no case (a lecture, a guest, an exercise): say what the session i
 ## Rules
 
 - Teach first: they should understand the case, not only have answers.
+- Before any step that takes more than a minute (a download, a long PDF, the workbook build), say in one line what you are doing, so they never wait in silence.
 - Their positions are theirs. Never fill them in.
 - Every assumption is visible, in the notes and on the workbook's Cover sheet.
 - Numbers from the workbook only after `check_workbook.py` prints "All checks OK".
 - Hand-ins: only they know which cases are graded hand-ins; never infer it.
-- Case PDFs are copyrighted: paraphrase, with at most one short quote. `IESE/` stays out of git.
+- Case PDFs are copyrighted: paraphrase, with at most one short quote. `library/IESE/` stays out of git.
 
 ## What first-year IESE courses usually ask for
 

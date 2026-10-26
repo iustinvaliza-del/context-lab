@@ -48,12 +48,12 @@ The person asked you to set up this starter for a workshop. They are new to this
 
 | Folder | What goes in it |
 |---|---|
-| `IESE/` | Made by the first pipeline run: your IESE courses from Blackboard, in a folder for each year (`1st year`, `2nd year`) with one folder per course inside it, each session's files, and the notes it writes. Kept out of git. |
+| `library/` | Your library. `library/IESE/` is made by the first pipeline run: your IESE courses from Blackboard, in a folder for each year (`1st year`, `2nd year`) with one folder per course inside it, each session's files, and the notes it writes. Kept out of git. |
 | `pipeline/` | The case pipeline: the Blackboard downloader, the case reader, the Excel workbook builder and its Python check, and worked examples |
 | `database/` | Your database: a search over your files and notes, and one general list to start. `SHAPE.md` says what it holds. The database file stays on your computer, out of git. |
 | `.claude/skills/prep-case/`, `.agents/skills/prep-case/` | The prep-case skill: how the tool preps a case, step by step |
 | `sources/` | Files for another weekly task, if you use the folder for one. The pipeline does not need it. |
-| `outputs/` | The answers you save in each round |
+| `Deliverables/` | Anything the tool makes for you to look at or keep, in a folder per day: `Deliverables/<date>/<name>/`. The copies you save in rounds 1 and 5 go in `Deliverables/<date>/workshop/`. Kept out of git, except its README. |
 | `.claude/skills/search-my-files/`, `.claude/skills/shape-database/` (and the same in `.agents/skills/`) | Search your files before answering, naming the file each fact came from; and change the database's shape when you ask |
 | `.claude/skills/summary/`, `.agents/skills/summary/` | Summary, then compact: type `/summary` (Claude Code) or ask for it (Codex) before the conversation passes half the window |
 | `AGENTS.md` | The greeting, the Learning mode section and a short section on your database for now; you fill in the rest in round 3 |
@@ -83,7 +83,7 @@ Every prompt below is also on one page with copy buttons: https://claude.ai/arti
 
 | Round | Changes | You see |
 |---|---|---|
-| 1 Run | your courses | `IESE/` fills up and your first prep |
+| 1 Run | your courses | `library/IESE/` fills up and your first prep |
 | 2 Correct | a rule in the prep-case skill | a correction that stays fixed |
 | 3 Personalise | `AGENTS.md` | notes written the way you like them |
 | 4 Ask | nothing; you read it all | every answer points at a file |
@@ -93,9 +93,9 @@ Where a command differs, the Codex one follows in brackets.
 
 ### Round 1: Run
 
-Ask the sentence above. The first time, a Blackboard window opens: sign in with your IESE email and password, and approve the phone prompt if Microsoft asks. The pipeline makes a folder for each of your courses in `IESE/1st year/` or `IESE/2nd year/`, downloads the syllabi, and keeps downloading the rest in the background (more in [The case pipeline](#the-case-pipeline) below). Say yes when it offers to save your login.
+Ask the sentence above, with the course and session of your next class. The first time, a Blackboard window opens: sign in with your IESE email and password, and approve the phone prompt if Microsoft asks. The pipeline sets up that course first in `library/IESE/1st year/` or `library/IESE/2nd year/`, fetches the session and preps it, and downloads all your other courses in the background (more in [The case pipeline](#the-case-pipeline) below). Say yes when it offers to save your login.
 
-When the notes are done, ask it to save a copy to `outputs/first.md`. Type `/context` \[`/status`\]: it read the prep-case skill, because the task called for it.
+When the notes are done, ask it to save a copy to `Deliverables/<date>/workshop/first.md`. Type `/context` \[`/status`\]: it read the prep-case skill, because the task called for it.
 
 The reply opens with "Radu says Hi". That comes from the one line in `AGENTS.md`, which the tool reads at the start of every session. Delete the line when you no longer want the greeting.
 
@@ -123,18 +123,18 @@ Ask: "What do you know about me and how you prep my cases, and which file did ea
 
 ### Round 5: Compare
 
-1. Start fresh with `/clear` \[a new chat\], ask the same sentence, and save the notes to `outputs/final.md`. The files are already downloaded, so it goes straight to the prep.
+1. Start fresh with `/clear` \[a new chat\], ask the same sentence, and save the notes to `Deliverables/<date>/workshop/final.md`. The files are already downloaded, so it goes straight to the prep.
 2. Correct anything still off. Then look at Agent Memory in Obsidian: the lesson is already saved as a note, because the Memory section in AGENTS.md asks for that.
 
 ### Debrief
 
-Open `outputs/first.md` and `outputs/final.md` side by side: the same sentence and the same model, with a corrected skill and your own AGENTS.md between them.
+Open `Deliverables/<date>/workshop/first.md` and `Deliverables/<date>/workshop/final.md` side by side: the same sentence and the same model, with a corrected skill and your own AGENTS.md between them.
 
 ## The case pipeline
 
 Ask: "Prep the case for session 5 of Corporate Finance" (any course and session). The `prep-case` skill does the rest:
 
-1. **The first time**, a Blackboard window opens. Sign in with your IESE email and password and approve the phone prompt if Microsoft asks. The pipeline finds every course you are enrolled in, makes a folder for each in `IESE/1st year/` or `IESE/2nd year/` (or `IESE/Other courses/` when Blackboard does not say the year), downloads each syllabus, and keeps downloading the other files in the background.
+1. **The first time**, it asks which course and session you have next, if you did not say. A Blackboard window opens: sign in with your IESE email and password and approve the phone prompt if Microsoft asks. The pipeline lists every course you are enrolled in, sets up the one you have next first (its folder in `library/IESE/1st year/` or `library/IESE/2nd year/`, or `library/IESE/Other courses/` when Blackboard does not say the year, and its syllabus), fetches that session and preps it. Meanwhile it downloads all your other courses in the background.
 2. **It asks whether to save your login.** Say yes and a small window asks for your IESE email and password; they go into Windows Credential Manager or the Mac Keychain, never into a file or the chat. From then on it signs in by itself. Say no and the window opens again whenever Blackboard's session has expired. To remove them: `uv run pipeline/blackboard.py forget-login`.
 3. **Every prep** downloads the session's latest files first, then writes pre-notes (what the case is about, in plain words) and case notes by question, with your positions left blank. For cases with numbers it computes them in Python and builds an Excel workbook whose Checks sheet Python recalculates; a number is quoted only when every check reads OK.
 
@@ -142,7 +142,7 @@ On Windows with Excel, optimisation cases can also get Excel's own Solver set up
 
 ## Your database and search
 
-Setup also makes a small database in `database/`, on your computer only. When you ask about your own material ("what do my notes say about WACC?"), the tool searches your files in `IESE/`, `sources/`, `outputs/` and Agent Memory first, reads the best passages, and names the file each fact came from. The search finds the words you use, with or without accents; it does not know that two different words mean the same thing, so the tool tries a few wordings.
+Setup also makes a small database in `database/`, on your computer only. When you ask about your own material ("what do my notes say about WACC?"), the tool searches your files in `library/`, `sources/`, `Deliverables/` and Agent Memory first, reads the best passages, and names the file each fact came from. The search finds the words you use, with or without accents; it does not know that two different words mean the same thing, so the tool tries a few wordings.
 
 The database starts with one general list and can be any shape you want: lists of people you meet, deals, readings, anything, shown in the chat, as a note in Obsidian, as a spreadsheet or as a page. The tool mentions this once and asks whether you want to shape it. Say no and it drops it. `database/SHAPE.md` always says what is in it.
 
@@ -168,4 +168,4 @@ In a long session, type `/summary` in Claude Code, or ask Codex to "summarize an
 
 ## Keep it private
 
-`.gitignore` keeps `IESE/`, your database and whatever you put in `sources/` out of git, and your Blackboard login is never in this folder. If you put this folder on GitHub later, make that repository private, and keep keys, passwords and logins out of every file.
+`.gitignore` keeps `library/IESE/`, your database and whatever you put in `sources/` out of git, and your Blackboard login is never in this folder. If you put this folder on GitHub later, make that repository private, and keep keys, passwords and logins out of every file.

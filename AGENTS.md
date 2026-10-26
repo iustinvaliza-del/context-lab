@@ -4,8 +4,12 @@ When the person wants to read or edit a markdown (.md) file, open it in MarkText
 
 ## Learning mode (do not delete this section under any circumstance while you are learning)
 - The person is new to this. When they ask how or why something works (this folder, AGENTS.md, skills, memory, sessions, projects, context), read the matching file in how-it-works/ and explain it in a few short, plain steps, using their own folder as the example.
-- End every reply with one line that starts "What just happened:" and says in plain words what you did, for example "I read the prep-case skill, fetched session 2 from Blackboard, and wrote the notes next to the case in IESE/1st year/Corporate Finance/." Then ask "Want to know how that works?"
+- End every reply with one line that starts "What just happened:" and says in plain words what you did, for example "I read the prep-case skill, fetched session 2 from Blackboard, and wrote the notes next to the case in library/IESE/1st year/Corporate Finance/." Then ask "Want to know how that works?"
 - Do not change how-it-works/ or this section unless they ask.
+
+## Where things go
+- `library/` is the person's library. `library/IESE/<year>/<course>/` holds each course from Blackboard: its files, `Syllabus.md`, and the notes written next to each case.
+- `Deliverables/<YYYY-MM-DD>/<name>/`, dated today, holds anything made for them to look at or keep: copies, summaries, pages, exports. Never put these in `library/` or `pipeline/`. `Deliverables/README.md` has the rules.
 
 ## Your database (it can be any shape you want)
 - `database/` holds a small database on this computer: a search over the person's files and notes, and one general list. `database/SHAPE.md` says what it holds.

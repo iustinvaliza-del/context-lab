@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS documents (
   path TEXT NOT NULL UNIQUE,  -- where the file is: inside this folder, or the full path outside it
   title TEXT,                 -- the file's first heading, or its name
   kind TEXT,                  -- markdown, text, table, pdf, word or slides
-  folder TEXT,                -- IESE, sources, outputs, Agent Memory, or another folder's name
+  folder TEXT,                -- library, sources, Deliverables, Agent Memory, or another folder's name
   modified INTEGER,           -- when the file last changed, to notice changes quickly
   size INTEGER,               -- its size in bytes
   fingerprint TEXT,           -- a code computed from its contents, to tell if it really changed
